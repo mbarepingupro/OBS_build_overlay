@@ -487,9 +487,11 @@
         const data = JSON.parse(event.data);
 
         if (data?.data?.event === "village_build") {
-          const { user, roll, haste, progress, userRoll, critChance, multiplier, blocksbuilt } = data.data;
+          const { user, roll, haste, progress, building, goal, userRoll, critChance, multiplier, blocksbuilt } = data.data;
           hasteActive = haste === "active";
-          if (progress) currentProgress = parseInt(progress);
+          if (progress)  currentProgress = parseInt(progress);
+          if (building)  currentBuilding = building;
+          if (goal)      currentGoal     = parseInt(goal);
           addBuild(user, parseInt(roll), hasteActive, parseInt(userRoll), parseInt(critChance), parseInt(multiplier), parseInt(blocksbuilt));
         }
 
