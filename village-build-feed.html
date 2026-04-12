@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Penguin Village Build Feed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: transparent;
+      font-family: 'Exo 2', sans-serif;
+      width: 340px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    /* ── Panel ─────────────────────────────────────── */
+    .panel {
+      background: linear-gradient(160deg, rgba(8,20,40,0.92) 0%, rgba(4,30,55,0.88) 100%);
+      border: 1px solid rgba(100,200,255,0.25);
+      border-radius: 12px;
+      padding: 12px 14px 10px;
+      box-shadow: 0 0 30px rgba(0,140,255,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(100,200,255,0.15);
+    }
+
+    .header-icon { font-size: 16px; }
+
+    .building-name {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      color: rgba(180,230,255,0.9);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .building-label {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 10px;
+      color: rgba(120,170,210,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+
+    /* ── Progress bar ───────────────────────────────── */
+    .progress-wrap {
+      margin-bottom: 10px;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(140,190,230,0.7);
+      margin-bottom: 4px;
+      font-weight: 300;
+    }
+
+    .progress-track {
+      height: 5px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1a7fc4, #5dd4ff);
+      border-radius: 99px;
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 8px rgba(93,212,255,0.5);
+    }
+
+    /* ── Haste banner ───────────────────────────────── */
+    .haste-banner {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 5px 8px;
+      margin-bottom: 8px;
+      border-radius: 7px;
+      background: rgba(255,140,0,0.12);
+      border: 1px solid rgba(255,160,0,0.4);
+      box-shadow: 0 0 14px rgba(255,140,0,0.15);
+      animation: hastePulse 1.5s ease-in-out infinite;
+    }
+
+    .haste-banner.visible { display: flex; }
+
+    .haste-label {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      color: #ffb347;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .haste-icon { font-size: 13px; }
+
+    @keyframes hastePulse {
+      0%, 100% { box-shadow: 0 0 14px rgba(255,140,0,0.15); border-color: rgba(255,160,0,0.4); }
+      50%       { box-shadow: 0 0 22px rgba(255,140,0,0.35); border-color: rgba(255,160,0,0.7); }
+    }
+
+    /* ── Haste build item ───────────────────────────── */
+    .feed-item.haste {
+      background: rgba(255,140,0,0.08);
+      border-color: rgba(255,160,0,0.3);
+    }
+
+    .feed-item.haste .feed-user { color: #ffb347; }
+    .feed-item.haste .feed-roll { color: rgba(255,180,80,0.85); font-weight: 600; }
+
+    /* ── Panel haste state ──────────────────────────── */
+    .panel.haste-active {
+      border-color: rgba(255,160,0,0.35);
+      box-shadow: 0 0 30px rgba(255,140,0,0.1), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    /* ── Feed list ──────────────────────────────────── */
+    .feed { display: flex; flex-direction: column; gap: 5px; }
+
+    .feed-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.05);
+      animation: slideIn 0.35s cubic-bezier(.22,1,.36,1) both;
+      transition: opacity 0.3s;
+    }
+
+    .feed-item.critical {
+      background: rgba(255,200,50,0.08);
+      border-color: rgba(255,200,50,0.25);
+    }
+
+    .feed-item.legendary {
+      background: rgba(180,80,255,0.1);
+      border-color: rgba(180,80,255,0.35);
+      box-shadow: 0 0 12px rgba(180,80,255,0.15);
+    }
+
+    .feed-item.fading { opacity: 0.35; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .feed-icon { font-size: 14px; flex-shrink: 0; }
+
+    .feed-left {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(200,235,255,0.95);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .feed-item.critical  .feed-left { color: #ffd966; }
+    .feed-item.legendary .feed-left { color: #d4a0ff; }
+    .feed-item.haste     .feed-left { color: #ffb347; }
+
+    .feed-divider {
+      font-size: 12px;
+      color: rgba(100,150,200,0.3);
+      flex-shrink: 0;
+      padding: 0 4px;
+    }
+
+    .feed-right {
+      font-size: 12px;
+      font-weight: 400;
+      color: rgba(120,180,220,0.7);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .feed-item.critical  .feed-right { color: rgba(255,210,80,0.75);  }
+    .feed-item.legendary .feed-right { color: rgba(200,140,255,0.75); }
+    .feed-item.haste     .feed-right { color: rgba(255,180,80,0.75);  }
+
+    /* ── Call to action ─────────────────────────────── */
+    .cta {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(100,200,255,0.1);
+      font-size: 12px;
+      color: rgba(140,190,230,0.6);
+      text-align: center;
+      letter-spacing: 0.04em;
+      font-weight: 300;
+    }
+
+    .cta-highlight {
+      color: rgba(93,212,255,0.9);
+      font-weight: 600;
+    }
+
+    /* ── Connection lost indicator ──────────────────── */
+    .offline-notice {
+      display: none;
+      font-size: 9px;
+      color: rgba(255,100,100,0.6);
+      text-align: center;
+      margin-top: 6px;
+      letter-spacing: 0.06em;
+    }
+    .offline-notice.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="panel">
+
+  <!-- Header -->
+  <div class="header">
+    <span class="header-icon">🏗️</span>
+    <div style="flex:1; overflow:hidden;">
+      <div class="building-label">Currently building:</div>
+      <div class="building-name" id="buildingName">Penguin Village</div>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-labels">
+      <span id="progressCurrent">0</span>
+      <span id="progressGoal">0</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Haste banner -->
+  <div class="haste-banner" id="hasteBanner">
+    <span class="haste-icon">⚡</span>
+    <span class="haste-label">DOUBLE BUILD ACTIVE</span>
+    <span class="haste-icon">⚡</span>
+  </div>
+
+  <!-- Build feed -->
+  <div class="feed" id="feed"></div>
+
+  <div class="offline-notice" id="offlineNotice">⚠ disconnected from streamerbot</div>
+
+  <!-- Call to action -->
+  <div class="cta">🐧 Use the <span class="cta-highlight">Build!</span> redeem to test your luck!</div>
+
+</div>
+
+<script>
+  // ── Config — edit these to match your setup ────────────────
+  const WS_URL      = "ws://127.0.0.1:8080/";   // Streamerbot WS address
+  const MAX_ITEMS   = 5;                          // builds shown at once
+
+  // ── Seed data so OBS preview isn't empty ──────────────────
+  let builds = [
+    { user: "IceFisher",  roll: 16, type: "legendary", haste: false, multiplier: 5,  blocksbuilt: 1563 },
+    { user: "SnowWalker", roll: 16, type: "critical",  haste: false, multiplier: 2,  blocksbuilt: 892  },
+    { user: "Tuxedo99",   roll: 16, type: "normal",    haste: true,  multiplier: 2,  blocksbuilt: 2341 },
+    { user: "PenguinBob", roll: 8,  type: "normal",    haste: false, multiplier: 1,  blocksbuilt: 445  },
+    { user: "ArcticFox",  roll: 11, type: "normal",    haste: false, multiplier: 1,  blocksbuilt: 78   },
+  ];
+
+  let currentBuilding = "Penguin Tavern";
+  let currentProgress = 12445;
+  let currentGoal     = 34000;
+  let hasteActive     = false;
+
+  // ── Render ─────────────────────────────────────────────────
+  function render() {
+    // building header
+    document.getElementById("buildingName").textContent = currentBuilding;
+
+    // progress bar
+    const pct = Math.min(100, (currentProgress / currentGoal) * 100);
+    document.getElementById("progressFill").style.width = pct + "%";
+    document.getElementById("progressCurrent").textContent = currentProgress.toLocaleString();
+    document.getElementById("progressGoal").textContent    = currentGoal.toLocaleString();
+
+    // haste banner + panel state
+    const panel  = document.querySelector(".panel");
+    const banner = document.getElementById("hasteBanner");
+    if (hasteActive) {
+      banner.classList.add("visible");
+      panel.classList.add("haste-active");
+    } else {
+      banner.classList.remove("visible");
+      panel.classList.remove("haste-active");
+    }
+
+    // feed items
+    const feed = document.getElementById("feed");
+    feed.innerHTML = "";
+    builds.slice(0, MAX_ITEMS).forEach((b, i) => {
+      const div = document.createElement("div");
+      let typeClass = b.type !== "normal" ? " " + b.type : "";
+      if (b.haste && b.type === "normal") typeClass = " haste";
+      div.className = "feed-item" + typeClass + (i > 0 ? " fading" : "");
+
+      const icon = b.type === "legendary" ? "💥"
+                 : b.type === "critical"  ? "🎲"
+                 : b.haste                ? "⚡"
+                 : "🔨";
+
+      const total    = b.roll * b.multiplier;
+      const multPart = b.multiplier > 1 ? ` +${b.roll}x${b.multiplier} = ${total}` : ` +${b.roll}`;
+      const left  = `${escHtml(b.user)}${multPart}`;
+      const right = `Total ${b.blocksbuilt.toLocaleString()}`;
+
+      div.innerHTML = `
+        <span class="feed-icon">${icon}</span>
+        <span class="feed-left">${left}</span>
+        <span class="feed-divider">|</span>
+        <span class="feed-right">${right}</span>
+      `;
+      feed.appendChild(div);
+    });
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function addBuild(user, roll, haste, userRoll, critChance, multiplier, blocksbuilt) {
+    const type = critChance === 100 ? "legendary"
+               : userRoll === 20    ? "critical"
+               : "normal";
+    builds.unshift({ user, roll, type, haste, multiplier, blocksbuilt });
+    if (builds.length > MAX_ITEMS) builds.pop();
+    render();
+  }
+
+  render(); // show seed data immediately
+
+  // ── Streamerbot WebSocket ──────────────────────────────────
+  let ws;
+
+  function connect() {
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      document.getElementById("offlineNotice").classList.remove("visible");
+      console.log("Connected to Streamerbot");
+
+      // Subscribe to Streamerbot broadcasts
+      ws.send(JSON.stringify({
+        request: "Subscribe",
+        id: "village-feed",
+        events: {
+          General: ["Custom"]
+        }
+      }));
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        // Handle incoming build event
+        // Streamerbot sends broadcasts under data.data
+        if (data?.data?.event === "village_build") {
+          const { user, roll, haste, progress, userRoll, critChance, multiplier, blocksbuilt } = data.data;
+          hasteActive = haste === "active";
+          if (progress) currentProgress = parseInt(progress);
+          addBuild(user, parseInt(roll), hasteActive, parseInt(userRoll), parseInt(critChance), parseInt(multiplier), parseInt(blocksbuilt));
+        }
+
+        // Update building info if sent
+        if (data?.data?.event === "village_update") {
+          const { building, progress, goal, haste } = data.data;
+          if (building) currentBuilding = building;
+          if (progress) currentProgress = parseInt(progress);
+          if (goal)     currentGoal     = parseInt(goal);
+          if (haste !== undefined) hasteActive = haste === "active";
+          render();
+        }
+
+      } catch(e) { /* ignore malformed messages */ }
+    };
+
+    ws.onclose = () => {
+      document.getElementById("offlineNotice").classList.add("visible");
+      setTimeout(connect, 3000); // auto-reconnect
+    };
+
+    ws.onerror = () => ws.close();
+  }
+
+  connect();
+</script>
+</body>
+</html>
