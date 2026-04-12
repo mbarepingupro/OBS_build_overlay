@@ -280,11 +280,11 @@
 
   // ── Seed data so OBS preview isn't empty ──────────────────
   let builds = [
-    { user: "IceFisher",  roll: 16, type: "legendary", haste: false, multiplier: 5,  blocksbuilt: 1563 },
-    { user: "SnowWalker", roll: 16, type: "critical",  haste: false, multiplier: 2,  blocksbuilt: 892  },
-    { user: "Tuxedo99",   roll: 16, type: "normal",    haste: true,  multiplier: 2,  blocksbuilt: 2341 },
-    { user: "PenguinBob", roll: 8,  type: "normal",    haste: false, multiplier: 1,  blocksbuilt: 445  },
-    { user: "ArcticFox",  roll: 11, type: "normal",    haste: false, multiplier: 1,  blocksbuilt: 78   },
+    { user: "IceFisher",  roll: 80, type: "legendary", haste: false, blocksbuilt: 1563 },
+    { user: "SnowWalker", roll: 32, type: "critical",  haste: false, blocksbuilt: 892  },
+    { user: "Tuxedo99",   roll: 32, type: "normal",    haste: true,  blocksbuilt: 2341 },
+    { user: "PenguinBob", roll: 8,  type: "normal",    haste: false, blocksbuilt: 445  },
+    { user: "ArcticFox",  roll: 11, type: "normal",    haste: false, blocksbuilt: 78   },
   ];
 
   let currentBuilding = "Penguin Tavern";
@@ -328,9 +328,7 @@
                  : b.haste                ? "⚡"
                  : "🔨";
 
-      const total    = b.roll * b.multiplier;
-      const multPart = b.multiplier > 1 ? ` +${b.roll}x${b.multiplier} = ${total}` : ` +${b.roll}`;
-      const left  = `${escHtml(b.user)}${multPart}`;
+      const left  = `${escHtml(b.user)} +${b.roll}`;
       const right = `Total ${b.blocksbuilt.toLocaleString()}`;
 
       div.innerHTML = `
@@ -347,11 +345,11 @@
     return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
-  function addBuild(user, roll, haste, userRoll, critChance, multiplier, blocksbuilt) {
+  function addBuild(user, roll, haste, userRoll, critChance, blocksbuilt) {
     const type = critChance === 100 ? "legendary"
                : userRoll === 20    ? "critical"
                : "normal";
-    builds.unshift({ user, roll, type, haste, multiplier, blocksbuilt });
+    builds.unshift({ user, roll, type, haste, blocksbuilt });
     if (builds.length > MAX_ITEMS) builds.pop();
     render();
   }
@@ -385,10 +383,10 @@
         // Handle incoming build event
         // Streamerbot sends broadcasts under data.data
         if (data?.data?.event === "village_build") {
-          const { user, roll, haste, progress, userRoll, critChance, multiplier, blocksbuilt } = data.data;
+          const { user, roll, haste, progress, userRoll, critChance, blocksbuilt } = data.data;
           hasteActive = haste === "active";
           if (progress) currentProgress = parseInt(progress);
-          addBuild(user, parseInt(roll), hasteActive, parseInt(userRoll), parseInt(critChance), parseInt(multiplier), parseInt(blocksbuilt));
+          addBuild(user, parseInt(roll), hasteActive, parseInt(userRoll), parseInt(critChance), parseInt(blocksbuilt));
         }
 
         // Update building info if sent
