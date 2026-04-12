@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Village Builder Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: transparent;
+      font-family: 'Exo 2', sans-serif;
+      width: 340px;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    /* ── Panel ─────────────────────────────────────── */
+    .panel {
+      position: relative;
+      background: linear-gradient(160deg, rgba(8,20,40,0.92) 0%, rgba(4,30,55,0.88) 100%);
+      border: 1px solid rgba(100,200,255,0.25);
+      border-radius: 12px;
+      padding: 12px 14px 10px;
+      box-shadow: 0 0 30px rgba(0,140,255,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+      backdrop-filter: blur(4px);
+    }
+
+    /* ── Snowflake corner accents ───────────────────── */
+    .snowflake {
+      position: absolute;
+      color: #a8d8ff;
+      opacity: 0.15;
+      font-size: 13px;
+      pointer-events: none;
+      user-select: none;
+      animation: snowSpin 10s linear infinite;
+    }
+    .sf-tl { top: 7px;    left: 9px;  }
+    .sf-tr { top: 7px;    right: 9px; animation-delay: -3.3s; }
+    .sf-bl { bottom: 7px; left: 9px;  animation-delay: -6.6s; }
+    .sf-br { bottom: 7px; right: 9px; animation-delay: -1.7s; }
+    @keyframes snowSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(100,200,255,0.15);
+    }
+    .header-icon {
+      font-size: 26px;
+      filter: drop-shadow(0 0 8px rgba(255,200,50,0.55));
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .header-text { flex: 1; overflow: hidden; }
+    .header-label {
+      font-size: 10px;
+      color: rgba(120,170,210,0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 2px;
+    }
+    .header-title {
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      color: rgba(210,240,255,0.95);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(93,212,255,0.35);
+    }
+
+    /* ── Mode tabs ──────────────────────────────────── */
+    .mode-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 9px;
+    }
+    .tab-group { display: flex; gap: 4px; }
+    .mode-tab {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      transition: all 0.3s;
+      border: 1px solid rgba(100,200,255,0.12);
+      color: rgba(140,190,230,0.35);
+      background: rgba(255,255,255,0.02);
+    }
+    .mode-tab.active {
+      color: rgba(93,212,255,0.95);
+      background: rgba(93,212,255,0.09);
+      border-color: rgba(93,212,255,0.35);
+      box-shadow: 0 0 10px rgba(93,212,255,0.1);
+    }
+    .period-label {
+      flex: 1;
+      font-size: 10px;
+      color: rgba(140,190,230,0.35);
+      text-align: right;
+      letter-spacing: 0.03em;
+      font-weight: 300;
+      white-space: nowrap;
+    }
+
+    /* ── Leaderboard rows ───────────────────────────── */
+    .lb-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .lb-row {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      overflow: hidden;
+    }
+
+    /* Staggered entry animation */
+    .lb-row { animation: rowIn 0.38s cubic-bezier(.22,1,.36,1) both; }
+    .lb-row:nth-child(1)  { animation-delay: 0.00s; }
+    .lb-row:nth-child(2)  { animation-delay: 0.04s; }
+    .lb-row:nth-child(3)  { animation-delay: 0.08s; }
+    .lb-row:nth-child(4)  { animation-delay: 0.12s; }
+    .lb-row:nth-child(5)  { animation-delay: 0.16s; }
+    .lb-row:nth-child(6)  { animation-delay: 0.20s; }
+    .lb-row:nth-child(7)  { animation-delay: 0.24s; }
+    .lb-row:nth-child(8)  { animation-delay: 0.28s; }
+    .lb-row:nth-child(9)  { animation-delay: 0.32s; }
+    .lb-row:nth-child(10) { animation-delay: 0.36s; }
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateX(-12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Medal themes */
+    .lb-row.gold   { background: rgba(255,200,50,0.07);  border-color: rgba(255,200,50,0.25); }
+    .lb-row.silver { background: rgba(180,200,220,0.06); border-color: rgba(180,200,220,0.2); }
+    .lb-row.bronze { background: rgba(200,130,80,0.07);  border-color: rgba(200,130,80,0.2); }
+
+    /* Relative progress bar behind row */
+    .lb-bar {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.9s cubic-bezier(.4,0,.2,1);
+      pointer-events: none;
+    }
+    .lb-row.gold   .lb-bar { background: linear-gradient(90deg, rgba(255,200,50,0.14), transparent); }
+    .lb-row.silver .lb-bar { background: linear-gradient(90deg, rgba(180,200,220,0.12), transparent); }
+    .lb-row.bronze .lb-bar { background: linear-gradient(90deg, rgba(200,130,80,0.12), transparent); }
+    .lb-row:not(.gold):not(.silver):not(.bronze) .lb-bar {
+      background: linear-gradient(90deg, rgba(93,212,255,0.07), transparent);
+    }
+
+    /* Rank badge */
+    .lb-rank {
+      font-size: 15px;
+      flex-shrink: 0;
+      width: 22px;
+      text-align: center;
+      line-height: 1;
+      position: relative;
+    }
+    .lb-rank-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(140,190,230,0.45);
+      width: 22px;
+      text-align: center;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    /* Username */
+    .lb-user {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(200,235,255,0.9);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      position: relative;
+    }
+    .lb-row.gold   .lb-user { color: #ffd966; }
+    .lb-row.silver .lb-user { color: #c8d8e8; }
+    .lb-row.bronze .lb-user { color: #e09060; }
+
+    /* Score */
+    .lb-score {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(93,212,255,0.85);
+      flex-shrink: 0;
+      white-space: nowrap;
+      position: relative;
+      font-variant-numeric: tabular-nums;
+    }
+    .lb-row.gold   .lb-score { color: rgba(255,210,80,0.95); }
+    .lb-row.silver .lb-score { color: rgba(180,210,240,0.95); }
+    .lb-row.bronze .lb-score { color: rgba(220,140,80,0.95); }
+    .lb-score-unit { font-size: 9px; font-weight: 400; opacity: 0.6; margin-left: 1px; }
+
+    /* Flash glow on score update */
+    .lb-row.flash::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 8px;
+      animation: rowFlash 0.85s ease-out forwards;
+      pointer-events: none;
+    }
+    .lb-row.flash             { --flash-col: rgba(93,212,255,0.55); }
+    .lb-row.gold.flash        { --flash-col: rgba(255,200,50,0.75); }
+    .lb-row.silver.flash      { --flash-col: rgba(180,210,240,0.75); }
+    .lb-row.bronze.flash      { --flash-col: rgba(220,140,80,0.75); }
+    @keyframes rowFlash {
+      0%   { box-shadow: 0 0 0px transparent; }
+      30%  { box-shadow: 0 0 18px var(--flash-col); }
+      100% { box-shadow: 0 0 0px transparent; }
+    }
+
+    /* ── Empty state ─────────────────────────────────── */
+    .lb-empty {
+      text-align: center;
+      padding: 18px 0;
+      font-size: 12px;
+      color: rgba(140,190,230,0.3);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Footer ─────────────────────────────────────── */
+    .footer {
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid rgba(100,200,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-info {
+      font-size: 10px;
+      color: rgba(140,190,230,0.35);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+    }
+    .footer-timer {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(93,212,255,0.45);
+      letter-spacing: 0.05em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Offline notice ─────────────────────────────── */
+    .offline-notice {
+      display: none;
+      font-size: 9px;
+      color: rgba(255,100,100,0.6);
+      text-align: center;
+      margin-top: 6px;
+      letter-spacing: 0.06em;
+    }
+    .offline-notice.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="panel">
+
+  <span class="snowflake sf-tl">❄</span>
+  <span class="snowflake sf-tr">❄</span>
+  <span class="snowflake sf-bl">❄</span>
+  <span class="snowflake sf-br">❄</span>
+
+  <!-- Header -->
+  <div class="header">
+    <span class="header-icon">🏆</span>
+    <div class="header-text">
+      <div class="header-label">Penguin Village</div>
+      <div class="header-title">Builder Leaderboard</div>
+    </div>
+  </div>
+
+  <!-- Mode tabs -->
+  <div class="mode-tabs">
+    <div class="tab-group">
+      <div class="mode-tab active" id="tabDaily">Daily</div>
+      <div class="mode-tab" id="tabWeekly">Weekly</div>
+    </div>
+    <span class="period-label" id="periodLabel"></span>
+  </div>
+
+  <!-- Leaderboard list -->
+  <div class="lb-list" id="lbList"></div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span class="footer-info" id="footerInfo">Resets at midnight</span>
+    <span class="footer-timer" id="footerTimer"></span>
+  </div>
+
+  <div class="offline-notice" id="offlineNotice">⚠ disconnected from streamerbot</div>
+
+</div>
+
+<script>
+  const WS_URL   = "ws://127.0.0.1:8080/";
+  const MAX_ROWS = 10;
+  const CYCLE_MS = 30000; // auto-cycle every 30 s
+
+  // ── Date / period helpers ─────────────────────────
+  function fmtDate(d) {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function getTodayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function getWeekMonday() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    const day = d.getDay() || 7; // Mon=1 … Sun=7
+    d.setDate(d.getDate() - day + 1);
+    return d;
+  }
+
+  function getWeekKey() {
+    const m = getWeekMonday();
+    return `${m.getFullYear()}-${String(m.getMonth()+1).padStart(2,'0')}-${String(m.getDate()).padStart(2,'0')}`;
+  }
+
+  // ── localStorage ──────────────────────────────────
+  const SK_DAILY  = 'vb_lb_daily';
+  const SK_WEEKLY = 'vb_lb_weekly';
+
+  function loadScores(storageKey, expectedPeriod) {
+    try {
+      const raw = JSON.parse(localStorage.getItem(storageKey) || 'null');
+      if (!raw || raw.period !== expectedPeriod) return {};
+      return raw.scores || {};
+    } catch { return {}; }
+  }
+
+  function saveScores(storageKey, period, scores) {
+    try { localStorage.setItem(storageKey, JSON.stringify({ period, scores })); } catch {}
+  }
+
+  // ── State ─────────────────────────────────────────
+  let mode         = 'daily';
+  let dailyScores  = loadScores(SK_DAILY,  getTodayKey());
+  let weeklyScores = loadScores(SK_WEEKLY, getWeekKey());
+  let flashSet     = new Set();
+  let cycleTimer   = null;
+  const MEDALS     = ['🥇','🥈','🥉'];
+
+  // ── Timer helpers ─────────────────────────────────
+  function getMsUntilMidnight() {
+    const now = new Date();
+    const t   = new Date(now);
+    t.setHours(24, 0, 0, 0);
+    return t - now;
+  }
+
+  function getMsUntilMonday() {
+    const now  = new Date();
+    const next = new Date(now);
+    next.setHours(0, 0, 0, 0);
+    const days = (8 - next.getDay()) % 7 || 7; // days until next Mon
+    next.setDate(next.getDate() + days);
+    return next - now;
+  }
+
+  function fmtCountdown(ms) {
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    return `${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m`;
+  }
+
+  function updateTimer() {
+    const ms = mode === 'daily' ? getMsUntilMidnight() : getMsUntilMonday();
+    document.getElementById('footerTimer').textContent = fmtCountdown(ms);
+  }
+
+  // ── Render ────────────────────────────────────────
+  function render() {
+    const scores = mode === 'daily' ? dailyScores : weeklyScores;
+    const sorted = Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, MAX_ROWS);
+
+    // Tabs
+    document.getElementById('tabDaily').classList.toggle('active', mode === 'daily');
+    document.getElementById('tabWeekly').classList.toggle('active', mode === 'weekly');
+
+    // Period label
+    const today  = new Date();
+    const monday = getWeekMonday();
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    document.getElementById('periodLabel').textContent = mode === 'daily'
+      ? `Today — ${fmtDate(today)}`
+      : `${fmtDate(monday)} – ${fmtDate(sunday)}`;
+
+    // Footer
+    document.getElementById('footerInfo').textContent =
+      mode === 'daily' ? 'Resets at midnight' : 'Resets every Monday';
+    updateTimer();
+
+    // List
+    const list = document.getElementById('lbList');
+    if (sorted.length === 0) {
+      list.innerHTML = `<div class="lb-empty">🐧 No builds yet ${mode === 'daily' ? 'today' : 'this week'}!</div>`;
+      return;
+    }
+
+    const topScore = sorted[0][1] || 1;
+    list.innerHTML = '';
+    sorted.forEach(([user, score], i) => {
+      const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+      const barPct    = Math.max(5, Math.round((score / topScore) * 100));
+      const isFlash   = flashSet.has(user);
+
+      const row = document.createElement('div');
+      row.className = `lb-row${rankClass ? ' ' + rankClass : ''}${isFlash ? ' flash' : ''}`;
+      row.innerHTML = `
+        <div class="lb-bar" style="width:${barPct}%"></div>
+        ${i < 3
+          ? `<span class="lb-rank">${MEDALS[i]}</span>`
+          : `<span class="lb-rank-num">${i + 1}</span>`}
+        <span class="lb-user">${escHtml(user)}</span>
+        <span class="lb-score">${score.toLocaleString()}<span class="lb-score-unit">blk</span></span>
+      `;
+      list.appendChild(row);
+
+      if (isFlash) setTimeout(() => row.classList.remove('flash'), 900);
+    });
+
+    flashSet.clear();
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Add build ─────────────────────────────────────
+  function addBuild(user, roll) {
+    const todayKey = getTodayKey();
+    const weekKey  = getWeekKey();
+
+    // Re-load from storage in case another browser source updated it
+    dailyScores = loadScores(SK_DAILY, todayKey);
+    dailyScores[user] = (dailyScores[user] || 0) + roll;
+    saveScores(SK_DAILY, todayKey, dailyScores);
+
+    weeklyScores = loadScores(SK_WEEKLY, weekKey);
+    weeklyScores[user] = (weeklyScores[user] || 0) + roll;
+    saveScores(SK_WEEKLY, weekKey, weeklyScores);
+
+    flashSet.add(user);
+    render();
+  }
+
+  // ── Mode / reset ──────────────────────────────────
+  function setMode(m) {
+    mode = m;
+    render();
+  }
+
+  function resetLeaderboard(which) {
+    if (which === 'daily' || which === 'all') {
+      dailyScores = {};
+      saveScores(SK_DAILY, getTodayKey(), {});
+    }
+    if (which === 'weekly' || which === 'all') {
+      weeklyScores = {};
+      saveScores(SK_WEEKLY, getWeekKey(), {});
+    }
+    render();
+  }
+
+  function startCycle() {
+    clearInterval(cycleTimer);
+    cycleTimer = setInterval(() => setMode(mode === 'daily' ? 'weekly' : 'daily'), CYCLE_MS);
+  }
+
+  // ── Init ──────────────────────────────────────────
+  render();
+  startCycle();
+  setInterval(updateTimer, 60000);
+
+  // ── WebSocket ─────────────────────────────────────
+  let ws;
+
+  function connect() {
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      document.getElementById('offlineNotice').classList.remove('visible');
+      ws.send(JSON.stringify({
+        request: 'Subscribe',
+        id: 'village-leaderboard',
+        events: { General: ['Custom'] }
+      }));
+    };
+
+    ws.onmessage = ({ data }) => {
+      try {
+        const msg = JSON.parse(data);
+        const d   = msg?.data;
+        if (!d) return;
+
+        if (d.event === 'village_build') {
+          addBuild(d.user, parseInt(d.roll));
+        }
+
+        if (d.event === 'village_leaderboard_reset') {
+          resetLeaderboard(d.mode || 'daily');
+        }
+
+        if (d.event === 'village_leaderboard_mode') {
+          if (d.mode === 'daily' || d.mode === 'weekly') {
+            clearInterval(cycleTimer);
+            setMode(d.mode);
+          } else if (d.mode === 'cycle') {
+            startCycle();
+          }
+        }
+
+      } catch {}
+    };
+
+    ws.onclose = () => {
+      document.getElementById('offlineNotice').classList.add('visible');
+      setTimeout(connect, 3000);
+    };
+    ws.onerror = () => ws.close();
+  }
+
+  connect();
+</script>
+</body>
+</html>
