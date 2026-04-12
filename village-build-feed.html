@@ -170,6 +170,17 @@
 
     .feed-icon { font-size: 14px; flex-shrink: 0; }
 
+    .feed-multiplier {
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      letter-spacing: 0.02em;
+    }
+
+    .feed-item.critical  .feed-multiplier { color: #ffd966; }
+    .feed-item.legendary .feed-multiplier { color: #d4a0ff; }
+    .feed-item.haste     .feed-multiplier { color: #ffb347; }
+
     .feed-left {
       font-size: 13px;
       font-weight: 600;
@@ -280,11 +291,11 @@
 
   // ── Seed data so OBS preview isn't empty ──────────────────
   let builds = [
-    { user: "IceFisher",  roll: 16, type: "legendary", haste: false, multiplier: 5,  blocksbuilt: 1563 },
-    { user: "SnowWalker", roll: 16, type: "critical",  haste: false, multiplier: 2,  blocksbuilt: 892  },
-    { user: "Tuxedo99",   roll: 16, type: "normal",    haste: true,  multiplier: 2,  blocksbuilt: 2341 },
-    { user: "PenguinBob", roll: 8,  type: "normal",    haste: false, multiplier: 1,  blocksbuilt: 445  },
-    { user: "ArcticFox",  roll: 11, type: "normal",    haste: false, multiplier: 1,  blocksbuilt: 78   },
+    { user: "IceFisher",  roll: 80, type: "legendary", haste: false, multiplier: 5, blocksbuilt: 1563 },
+    { user: "SnowWalker", roll: 32, type: "critical",  haste: false, multiplier: 2, blocksbuilt: 892  },
+    { user: "Tuxedo99",   roll: 32, type: "normal",    haste: true,  multiplier: 2, blocksbuilt: 2341 },
+    { user: "PenguinBob", roll: 8,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 445  },
+    { user: "ArcticFox",  roll: 11, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 78   },
   ];
 
   let currentBuilding = "Penguin Tavern";
@@ -323,18 +334,19 @@
       if (b.haste && b.type === "normal") typeClass = " haste";
       div.className = "feed-item" + typeClass + (i > 0 ? " fading" : "");
 
-      const icon = b.type === "legendary" ? "💥"
-                 : b.type === "critical"  ? "🎲"
-                 : b.haste                ? "⚡"
-                 : "🔨";
+      const iconMult = b.type === "legendary" ? 5
+                     : b.type === "critical"   ? 2
+                     : b.multiplier > 1        ? b.multiplier
+                     : 0;
+      const iconHtml = iconMult > 0
+        ? `<span class="feed-multiplier">x${iconMult}</span>`
+        : `<span class="feed-icon">🔨</span>`;
 
-      const total    = b.roll * b.multiplier;
-      const multPart = b.multiplier > 1 ? ` +${b.roll}x${b.multiplier} = ${total}` : ` +${b.roll}`;
-      const left  = `${escHtml(b.user)}${multPart}`;
+      const left  = `${escHtml(b.user)} +${b.roll}`;
       const right = `Total ${b.blocksbuilt.toLocaleString()}`;
 
       div.innerHTML = `
-        <span class="feed-icon">${icon}</span>
+        ${iconHtml}
         <span class="feed-left">${left}</span>
         <span class="feed-divider">|</span>
         <span class="feed-right">${right}</span>
