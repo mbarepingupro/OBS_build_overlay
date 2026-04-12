@@ -334,8 +334,12 @@
       if (b.haste && b.type === "normal") typeClass = " haste";
       div.className = "feed-item" + typeClass + (i > 0 ? " fading" : "");
 
-      const iconHtml = b.multiplier > 1
-        ? `<span class="feed-multiplier">x${b.multiplier}</span>`
+      const iconMult = b.type === "legendary" ? 5
+                     : b.type === "critical"   ? 2
+                     : b.multiplier > 1        ? b.multiplier
+                     : 0;
+      const iconHtml = iconMult > 0
+        ? `<span class="feed-multiplier">x${iconMult}</span>`
         : `<span class="feed-icon">🔨</span>`;
 
       const left  = `${escHtml(b.user)} +${b.roll}`;
