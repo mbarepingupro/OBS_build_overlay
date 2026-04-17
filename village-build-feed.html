@@ -14,6 +14,7 @@
       width: 340px;
       padding: 10px;
       overflow: hidden;
+      zoom: 2;
     }
 
     /* ── Panel ─────────────────────────────────────── */
@@ -389,7 +390,7 @@
 
 <script>
   const WS_URL    = "ws://127.0.0.1:8080/";
-  const MAX_ITEMS = 5;
+  const MAX_ITEMS = 10;
 
   let builds = [
     { user: "IceFisher",  roll: 80, type: "legendary", haste: false, multiplier: 5, blocksbuilt: 1563 },
@@ -397,6 +398,11 @@
     { user: "Tuxedo99",   roll: 32, type: "normal",    haste: true,  multiplier: 2, blocksbuilt: 2341 },
     { user: "PenguinBob", roll: 8,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 445  },
     { user: "ArcticFox",  roll: 11, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 78   },
+    { user: "FrostByte",  roll: 14, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 310  },
+    { user: "IglooBob",   roll: 20, type: "critical",  haste: false, multiplier: 2, blocksbuilt: 1100 },
+    { user: "SnowCone",   roll: 7,  type: "normal",    haste: true,  multiplier: 2, blocksbuilt: 220  },
+    { user: "Waddles",    roll: 3,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 55   },
+    { user: "BluePenguin",roll: 18, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 670  },
   ];
 
   let currentBuilding = "Penguin Tavern";
