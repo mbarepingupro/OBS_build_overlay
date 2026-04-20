@@ -26,6 +26,17 @@
       padding: 12px 14px 10px;
       box-shadow: 0 0 30px rgba(0,140,255,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
       backdrop-filter: blur(4px);
+      transition: border-color 0.5s, box-shadow 0.5s;
+    }
+
+    .panel.haste-active {
+      border-color: rgba(255,160,0,0.35);
+      box-shadow: 0 0 30px rgba(255,140,0,0.1), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .panel.raid-active {
+      border-color: rgba(220,50,50,0.45);
+      box-shadow: 0 0 30px rgba(180,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
     }
 
     /* ── Snowflake corner accents ───────────────────── */
@@ -56,22 +67,36 @@
       margin-bottom: 10px;
       padding-bottom: 8px;
       border-bottom: 1px solid rgba(100,200,255,0.15);
+      transition: border-color 0.5s;
     }
 
-    .header-penguin {
+    .panel.raid-active .header {
+      border-bottom-color: rgba(220,80,60,0.2);
+    }
+
+    .header-icon {
       font-size: 26px;
       filter: drop-shadow(0 0 8px rgba(93,212,255,0.55));
       flex-shrink: 0;
       line-height: 1;
+      transition: filter 0.5s;
+    }
+
+    .panel.raid-active .header-icon {
+      filter: drop-shadow(0 0 8px rgba(255,80,50,0.7));
     }
 
     .building-label {
-      font-family: 'Exo 2', sans-serif;
       font-size: 10px;
       color: rgba(120,170,210,0.6);
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-bottom: 2px;
+      transition: color 0.5s;
+    }
+
+    .panel.raid-active .building-label {
+      color: rgba(210,100,80,0.6);
     }
 
     .building-name {
@@ -80,14 +105,19 @@
       color: rgba(210,240,255,0.95);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      flex: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       text-shadow: 0 0 14px rgba(93,212,255,0.35);
+      transition: color 0.5s, text-shadow 0.5s;
     }
 
-    /* ── Progress bar ───────────────────────────────── */
+    .panel.raid-active .building-name {
+      color: rgba(255,200,180,0.95);
+      text-shadow: 0 0 14px rgba(255,80,50,0.4);
+    }
+
+    /* ── Normal progress bar ────────────────────────── */
     .progress-wrap { margin-bottom: 10px; }
 
     .progress-labels {
@@ -131,7 +161,76 @@
       100% { left: 130%; }
     }
 
-    /* ── Haste banner ───────────────────────────────── */
+    /* ── Boss health bar ────────────────────────────── */
+    .boss-wrap {
+      display: none;
+      margin-bottom: 10px;
+    }
+
+    .boss-hp-row {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      font-size: 12px;
+      margin-bottom: 4px;
+      font-weight: 300;
+    }
+
+    .boss-hp-current {
+      font-weight: 600;
+      color: rgba(255,155,135,0.95);
+    }
+
+    .boss-hp-sep { color: rgba(180,70,50,0.4); }
+
+    .boss-hp-max { color: rgba(180,100,80,0.55); }
+
+    .boss-hp-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(180,90,70,0.5);
+      margin-left: 2px;
+    }
+
+    .boss-track {
+      height: 6px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .boss-fill {
+      position: relative;
+      height: 100%;
+      background: linear-gradient(90deg, #7a0000, #e83030);
+      border-radius: 99px;
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 8px rgba(220,40,40,0.55);
+      overflow: hidden;
+    }
+
+    .boss-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -60%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+      animation: shimmer 2.4s ease-in-out infinite;
+    }
+
+    .boss-fill.danger {
+      background: linear-gradient(90deg, #550000, #ff1a1a);
+      animation: bossHPPulse 0.75s ease-in-out infinite;
+    }
+
+    @keyframes bossHPPulse {
+      0%, 100% { box-shadow: 0 0 6px rgba(255,20,20,0.4); }
+      50%       { box-shadow: 0 0 20px rgba(255,20,20,0.9); }
+    }
+
+    /* ── Haste / Battle Frenzy banner ───────────────── */
     .haste-banner {
       display: none;
       align-items: center;
@@ -161,12 +260,6 @@
     @keyframes hastePulse {
       0%, 100% { box-shadow: 0 0 14px rgba(255,140,0,0.15); border-color: rgba(255,160,0,0.4); }
       50%       { box-shadow: 0 0 22px rgba(255,140,0,0.35); border-color: rgba(255,160,0,0.7); }
-    }
-
-    /* ── Panel haste state ──────────────────────────── */
-    .panel.haste-active {
-      border-color: rgba(255,160,0,0.35);
-      box-shadow: 0 0 30px rgba(255,140,0,0.1), inset 0 1px 0 rgba(255,255,255,0.06);
     }
 
     /* ── Feed list ──────────────────────────────────── */
@@ -208,7 +301,7 @@
       to   { opacity: 1; transform: translateX(0); }
     }
 
-    /* ── New build flash ────────────────────────────── */
+    /* ── New entry flash ────────────────────────────── */
     .feed-item.new::after {
       content: '';
       position: absolute;
@@ -285,6 +378,11 @@
       white-space: nowrap;
     }
 
+    /* Raid mode: normal attack damage in red tone */
+    .feed.raid .feed-item:not(.critical):not(.legendary):not(.haste) .feed-roll {
+      color: rgba(255,100,80,0.85);
+    }
+
     .feed-item.critical  .feed-user { color: #ffd966; }
     .feed-item.legendary .feed-user { color: #d4a0ff; }
     .feed-item.haste     .feed-user { color: #ffb347; }
@@ -312,6 +410,49 @@
     .feed-item.legendary .feed-right { color: rgba(200,140,255,0.7); }
     .feed-item.haste     .feed-right { color: rgba(255,180,80,0.7);  }
 
+    /* ── Victory overlay ────────────────────────────── */
+    .victory-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: rgba(4,12,28,0.96);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      z-index: 10;
+      border: 1px solid rgba(255,215,0,0.3);
+      animation: victoryGlow 2s ease-in-out infinite;
+    }
+
+    .victory-overlay.visible { display: flex; }
+
+    .victory-icon { font-size: 34px; }
+
+    .victory-title {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      color: #ffd700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-shadow: 0 0 22px rgba(255,215,0,0.65);
+    }
+
+    .victory-sub {
+      font-size: 11px;
+      color: rgba(180,230,255,0.75);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      text-align: center;
+      padding: 0 16px;
+    }
+
+    @keyframes victoryGlow {
+      0%, 100% { box-shadow: inset 0 0 40px rgba(255,215,0,0.04), 0 0 20px rgba(255,215,0,0.08); border-color: rgba(255,215,0,0.25); }
+      50%       { box-shadow: inset 0 0 60px rgba(255,215,0,0.09), 0 0 36px rgba(255,215,0,0.18); border-color: rgba(255,215,0,0.5);  }
+    }
+
     /* ── Call to action ─────────────────────────────── */
     .cta {
       margin-top: 8px;
@@ -322,12 +463,17 @@
       text-align: center;
       letter-spacing: 0.04em;
       font-weight: 300;
+      transition: border-color 0.5s;
     }
+
+    .panel.raid-active .cta { border-top-color: rgba(220,80,60,0.15); }
 
     .cta-highlight {
       color: rgba(93,212,255,0.9);
       font-weight: 600;
     }
+
+    .panel.raid-active .cta-highlight { color: rgba(255,120,100,0.9); }
 
     /* ── Connection lost indicator ──────────────────── */
     .offline-notice {
@@ -343,7 +489,7 @@
 </head>
 <body>
 
-<div class="panel">
+<div class="panel" id="panel">
 
   <!-- Snowflake corner accents -->
   <span class="snowflake sf-tl">❄</span>
@@ -351,17 +497,24 @@
   <span class="snowflake sf-bl">❄</span>
   <span class="snowflake sf-br">❄</span>
 
+  <!-- Victory overlay (shown on boss defeat) -->
+  <div class="victory-overlay" id="victoryOverlay">
+    <div class="victory-icon">🏆</div>
+    <div class="victory-title">Boss Defeated!</div>
+    <div class="victory-sub" id="victoryRewardText">The village receives a reward!</div>
+  </div>
+
   <!-- Header -->
   <div class="header">
-    <span class="header-penguin">🐧</span>
+    <span class="header-icon" id="headerIcon">🐧</span>
     <div style="flex:1; overflow:hidden;">
-      <div class="building-label">Currently building:</div>
+      <div class="building-label" id="headerLabel">Currently building:</div>
       <div class="building-name" id="buildingName">Penguin Village</div>
     </div>
   </div>
 
-  <!-- Progress -->
-  <div class="progress-wrap">
+  <!-- Normal progress bar -->
+  <div class="progress-wrap" id="normalProgress">
     <div class="progress-labels">
       <span id="progressCurrent">0</span>
       <span id="progressGoal">0</span>
@@ -371,20 +524,33 @@
     </div>
   </div>
 
-  <!-- Haste banner -->
+  <!-- Boss health bar (raid mode only) -->
+  <div class="boss-wrap" id="raidBoss">
+    <div class="boss-hp-row">
+      <span class="boss-hp-current" id="bossCurrentHP">5,000</span>
+      <span class="boss-hp-sep">/</span>
+      <span class="boss-hp-max" id="bossMaxHPLabel">5,000</span>
+      <span class="boss-hp-label">HP</span>
+    </div>
+    <div class="boss-track">
+      <div class="boss-fill" id="bossFill" style="width:100%"></div>
+    </div>
+  </div>
+
+  <!-- Haste / Battle Frenzy banner -->
   <div class="haste-banner" id="hasteBanner">
     <span class="haste-icon">⚡</span>
-    <span class="haste-label">DOUBLE BUILD ACTIVE</span>
+    <span class="haste-label" id="hasteLabel">DOUBLE BUILD ACTIVE</span>
     <span class="haste-icon">⚡</span>
   </div>
 
-  <!-- Build feed -->
+  <!-- Build / Attack feed -->
   <div class="feed" id="feed"></div>
 
   <div class="offline-notice" id="offlineNotice">⚠ disconnected from streamerbot</div>
 
   <!-- Call to action -->
-  <div class="cta">🐧 Use the <span class="cta-highlight">!build</span> command to test your luck!</div>
+  <div class="cta" id="cta">🐧 Use the <span class="cta-highlight">Build!</span> redeem to test your luck!</div>
 
 </div>
 
@@ -392,44 +558,72 @@
   const WS_URL    = "ws://127.0.0.1:8080/";
   const MAX_ITEMS = 10;
 
+  // ── Normal mode state ──────────────────────────────
   let builds = [
-    { user: "IceFisher",  roll: 80, type: "legendary", haste: false, multiplier: 5, blocksbuilt: 1563 },
-    { user: "SnowWalker", roll: 32, type: "critical",  haste: false, multiplier: 2, blocksbuilt: 892  },
-    { user: "Tuxedo99",   roll: 32, type: "normal",    haste: false, multiplier: 2, blocksbuilt: 2341 },
-    { user: "PenguinBob", roll: 8,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 445  },
-    { user: "ArcticFox",  roll: 11, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 78   },
-    { user: "FrostByte",  roll: 14, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 310  },
-    { user: "IglooBob",   roll: 20, type: "critical",  haste: false, multiplier: 2, blocksbuilt: 1100 },
-    { user: "SnowCone",   roll: 7,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 220  },
-    { user: "Waddles",    roll: 3,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 55   },
-    { user: "BluePenguin",roll: 18, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 670  },
+    { user: "IceFisher",   roll: 80, type: "legendary", haste: false, multiplier: 5, blocksbuilt: 1563 },
+    { user: "SnowWalker",  roll: 32, type: "critical",  haste: false, multiplier: 2, blocksbuilt: 892  },
+    { user: "Tuxedo99",    roll: 32, type: "normal",    haste: false, multiplier: 2, blocksbuilt: 2341 },
+    { user: "PenguinBob",  roll: 8,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 445  },
+    { user: "ArcticFox",   roll: 11, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 78   },
+    { user: "FrostByte",   roll: 14, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 310  },
+    { user: "IglooBob",    roll: 20, type: "critical",  haste: false, multiplier: 2, blocksbuilt: 1100 },
+    { user: "SnowCone",    roll: 7,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 220  },
+    { user: "Waddles",     roll: 3,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 55   },
+    { user: "BluePenguin", roll: 18, type: "normal",    haste: false, multiplier: 1, blocksbuilt: 670  },
   ];
 
   let currentBuilding = "Penguin Tavern";
   let currentProgress = 12445;
   let currentGoal     = 34000;
-  let hasteActive     = false; // banner stays hidden until Streamerbot sends haste:"active"
+  let hasteActive     = false;
 
+  // ── Raid mode state ────────────────────────────────
+  let raidMode    = false;
+  let bossName    = "";
+  let bossHP      = 0;
+  let bossMaxHP   = 0;
+  let raidReward  = 0;
+
+  // ── Render ─────────────────────────────────────────
   function render(flashTop = false) {
-    document.getElementById("buildingName").textContent = currentBuilding;
+    const panel = document.getElementById("panel");
 
-    const pct = Math.min(100, (currentProgress / currentGoal) * 100);
-    document.getElementById("progressFill").style.width = pct + "%";
-    document.getElementById("progressCurrent").textContent = currentProgress.toLocaleString();
-    document.getElementById("progressGoal").textContent    = currentGoal.toLocaleString();
+    // Header
+    document.getElementById("headerIcon").textContent   = raidMode ? "⚔️" : "🐧";
+    document.getElementById("headerLabel").textContent  = raidMode ? "Raid event:" : "Currently building:";
+    document.getElementById("buildingName").textContent = raidMode ? bossName : currentBuilding;
 
-    const panel  = document.querySelector(".panel");
-    const banner = document.getElementById("hasteBanner");
-    if (hasteActive) {
-      banner.classList.add("visible");
-      panel.classList.add("haste-active");
+    // Progress bar vs boss bar
+    document.getElementById("normalProgress").style.display = raidMode ? "none"  : "block";
+    document.getElementById("raidBoss").style.display       = raidMode ? "block" : "none";
+
+    if (!raidMode) {
+      const pct = Math.min(100, (currentProgress / currentGoal) * 100);
+      document.getElementById("progressFill").style.width    = pct + "%";
+      document.getElementById("progressCurrent").textContent = currentProgress.toLocaleString();
+      document.getElementById("progressGoal").textContent    = currentGoal.toLocaleString();
     } else {
-      banner.classList.remove("visible");
-      panel.classList.remove("haste-active");
+      const pct  = bossMaxHP > 0 ? Math.max(0, Math.min(100, (bossHP / bossMaxHP) * 100)) : 0;
+      const fill = document.getElementById("bossFill");
+      fill.style.width = pct + "%";
+      fill.classList.toggle("danger", pct > 0 && pct <= 25);
+      document.getElementById("bossCurrentHP").textContent  = Math.max(0, bossHP).toLocaleString();
+      document.getElementById("bossMaxHPLabel").textContent = bossMaxHP.toLocaleString();
     }
 
+    // Panel border state — raid takes priority over haste
+    panel.classList.toggle("raid-active",  raidMode);
+    panel.classList.toggle("haste-active", !raidMode && hasteActive);
+
+    // Haste / frenzy banner
+    document.getElementById("hasteLabel").textContent = raidMode ? "BATTLE FRENZY ACTIVE" : "DOUBLE BUILD ACTIVE";
+    document.getElementById("hasteBanner").classList.toggle("visible", hasteActive);
+
+    // Feed
     const feed = document.getElementById("feed");
+    feed.classList.toggle("raid", raidMode);
     feed.innerHTML = "";
+
     builds.slice(0, MAX_ITEMS).forEach((b, i) => {
       const div = document.createElement("div");
       let typeClass = b.type !== "normal" ? " " + b.type : "";
@@ -441,27 +635,39 @@
                      : b.type === "critical"   ? 2
                      : b.multiplier > 1        ? b.multiplier
                      : 0;
+      const baseIcon = raidMode ? "⚔️" : "🔨";
       const iconHtml = iconMult > 0
         ? `<span class="feed-multiplier">x${iconMult}</span>`
-        : `<span class="feed-icon">🔨</span>`;
+        : `<span class="feed-icon">${baseIcon}</span>`;
+
+      const prefix    = raidMode ? "-" : "+";
+      const rightText = raidMode
+        ? `HP: ${b.remainingHP !== undefined ? Math.max(0, b.remainingHP).toLocaleString() : "—"}`
+        : `Total ${b.blocksbuilt.toLocaleString()}`;
 
       div.innerHTML = `
         ${iconHtml}
         <span class="feed-left">
           <span class="feed-user">${escHtml(b.user)}</span>
-          <span class="feed-roll">+${b.roll}</span>
+          <span class="feed-roll">${prefix}${b.roll}</span>
         </span>
         <span class="feed-divider">|</span>
-        <span class="feed-right">Total ${b.blocksbuilt.toLocaleString()}</span>
+        <span class="feed-right">${rightText}</span>
       `;
       feed.appendChild(div);
     });
+
+    // CTA
+    document.getElementById("cta").innerHTML = raidMode
+      ? '⚔️ Use <span class="cta-highlight">!fight</span> to attack the boss!'
+      : '🐧 Use the <span class="cta-highlight">Build!</span> redeem to test your luck!';
   }
 
   function escHtml(s) {
     return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
+  // ── Normal build ───────────────────────────────────
   function addBuild(user, roll, haste, userRoll, critChance, multiplier, blocksbuilt) {
     const type = critChance === 100 ? "legendary"
                : userRoll === 20    ? "critical"
@@ -471,8 +677,35 @@
     render(true);
   }
 
+  // ── Raid attack ────────────────────────────────────
+  function addAttack(user, damage, userRoll, critChance, multiplier, blocksbuilt, remainingHP) {
+    const type = critChance === 100 ? "legendary"
+               : userRoll === 20    ? "critical"
+               : "normal";
+    builds.unshift({ user, roll: damage, type, haste: hasteActive, multiplier, blocksbuilt, remainingHP });
+    if (builds.length > MAX_ITEMS) builds.pop();
+    bossHP = remainingHP;
+    render(true);
+  }
+
+  // ── Victory sequence ───────────────────────────────
+  function showVictory(reward) {
+    document.getElementById("victoryRewardText").textContent =
+      `+${reward.toLocaleString()} blocks rewarded to the village!`;
+    document.getElementById("victoryOverlay").classList.add("visible");
+
+    setTimeout(() => {
+      document.getElementById("victoryOverlay").classList.remove("visible");
+      currentProgress += reward;
+      raidMode = false;
+      builds   = [];
+      render();
+    }, 6000);
+  }
+
   render();
 
+  // ── Streamerbot WebSocket ──────────────────────────
   let ws;
 
   function connect() {
@@ -480,7 +713,6 @@
 
     ws.onopen = () => {
       document.getElementById("offlineNotice").classList.remove("visible");
-      console.log("Connected to Streamerbot");
       ws.send(JSON.stringify({
         request: "Subscribe",
         id: "village-feed",
@@ -491,23 +723,55 @@
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        const d    = data?.data;
+        if (!d) return;
 
-        if (data?.data?.event === "village_build") {
-          const { user, roll, haste, progress, building, goal, userRoll, critChance, multiplier, blocksbuilt } = data.data;
-          hasteActive = haste === "active";
-          if (progress)  currentProgress = parseInt(progress);
-          if (building)  currentBuilding = building;
-          if (goal)      currentGoal     = parseInt(goal);
-          addBuild(user, parseInt(roll), hasteActive, parseInt(userRoll), parseInt(critChance), parseInt(multiplier), parseInt(blocksbuilt));
+        // ── Normal mode events ─────────────────────
+        if (d.event === "village_build") {
+          if (raidMode) return;
+          hasteActive = d.haste === "active";
+          if (d.progress) currentProgress = parseInt(d.progress);
+          if (d.building) currentBuilding = d.building;
+          if (d.goal)     currentGoal     = parseInt(d.goal);
+          addBuild(d.user, parseInt(d.roll), hasteActive, parseInt(d.userRoll), parseInt(d.critChance), parseInt(d.multiplier), parseInt(d.blocksbuilt));
         }
 
-        if (data?.data?.event === "village_update") {
-          const { building, progress, goal, haste } = data.data;
-          if (building) currentBuilding = building;
-          if (progress) currentProgress = parseInt(progress);
-          if (goal)     currentGoal     = parseInt(goal);
-          if (haste !== undefined) hasteActive = haste === "active";
+        if (d.event === "village_update") {
+          if (raidMode) return;
+          if (d.building) currentBuilding = d.building;
+          if (d.progress) currentProgress = parseInt(d.progress);
+          if (d.goal)     currentGoal     = parseInt(d.goal);
+          if (d.haste !== undefined) hasteActive = d.haste === "active";
           render();
+        }
+
+        // ── Raid events ────────────────────────────
+        if (d.event === "village_raid_start") {
+          bossName   = d.bossName || "Unknown Boss";
+          bossMaxHP  = parseInt(d.bossHP)  || 5000;
+          bossHP     = bossMaxHP;
+          raidReward = parseInt(d.reward)  || 0;
+          raidMode   = true;
+          builds     = [];
+          render();
+        }
+
+        if (d.event === "village_raid_attack") {
+          if (!raidMode) return;
+          addAttack(
+            d.user,
+            parseInt(d.damage),
+            parseInt(d.userRoll),
+            parseInt(d.critChance),
+            parseInt(d.multiplier),
+            parseInt(d.blocksbuilt),
+            parseInt(d.remainingHP)
+          );
+        }
+
+        if (d.event === "village_raid_end") {
+          if (!raidMode) return;
+          showVictory(parseInt(d.reward) || raidReward);
         }
 
       } catch(e) { /* ignore malformed messages */ }
