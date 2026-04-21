@@ -485,6 +485,187 @@
       letter-spacing: 0.06em;
     }
     .offline-notice.visible { display: block; }
+
+    /* ── Festival mode ──────────────────────────────── */
+    .panel.festival-active {
+      border-color: rgba(255,195,0,0.4);
+      box-shadow: 0 0 30px rgba(255,180,0,0.1), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+    .panel.festival-active .header         { border-bottom-color: rgba(255,185,0,0.2); }
+    .panel.festival-active .header-icon    { filter: drop-shadow(0 0 8px rgba(255,200,0,0.75)); }
+    .panel.festival-active .building-label { color: rgba(255,185,50,0.65); }
+    .panel.festival-active .building-name  { color: rgba(255,240,160,0.95); text-shadow: 0 0 14px rgba(255,200,50,0.4); }
+    .panel.festival-active .cta            { border-top-color: rgba(255,185,0,0.15); }
+    .panel.festival-active .cta-highlight  { color: rgba(255,220,80,0.9); }
+
+    /* ── Emergency mode ─────────────────────────────── */
+    .panel.emergency-active {
+      border-color: rgba(255,70,20,0.5);
+      box-shadow: 0 0 30px rgba(220,50,0,0.18), inset 0 1px 0 rgba(255,255,255,0.06);
+      animation: emergencyBorderPulse 1s ease-in-out infinite;
+    }
+    @keyframes emergencyBorderPulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(220,50,0,0.12), inset 0 1px 0 rgba(255,255,255,0.06); }
+      50%       { box-shadow: 0 0 44px rgba(255,70,0,0.3),  inset 0 1px 0 rgba(255,255,255,0.06); }
+    }
+    .panel.emergency-active .header         { border-bottom-color: rgba(255,80,30,0.2); }
+    .panel.emergency-active .header-icon    { filter: drop-shadow(0 0 8px rgba(255,80,0,0.8)); }
+    .panel.emergency-active .building-label { color: rgba(255,100,50,0.65); }
+    .panel.emergency-active .building-name  { color: rgba(255,200,160,0.95); text-shadow: 0 0 14px rgba(255,80,30,0.45); }
+    .panel.emergency-active .cta            { border-top-color: rgba(255,80,30,0.15); }
+    .panel.emergency-active .cta-highlight  { color: rgba(255,140,80,0.9); }
+
+    /* ── Emergency HP bar ───────────────────────────── */
+    .emergency-wrap { display: none; margin-bottom: 10px; }
+    .emergency-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 3px;
+    }
+    .emergency-hp-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(255,120,60,0.6);
+    }
+    .emergency-hp-values {
+      font-size: 11px;
+      color: rgba(255,140,80,0.7);
+      font-weight: 300;
+    }
+    .emergency-timer-row { display: flex; justify-content: center; margin-bottom: 5px; }
+    .emergency-timer {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,200,80,0.9);
+      letter-spacing: 0.08em;
+    }
+    .emergency-timer.urgent {
+      color: rgba(255,70,40,0.95);
+      animation: timerUrgent 0.5s ease-in-out infinite;
+    }
+    @keyframes timerUrgent {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.5; }
+    }
+    .emergency-track {
+      height: 6px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .emergency-fill {
+      position: relative;
+      height: 100%;
+      background: linear-gradient(90deg, #7a3000, #ff6020);
+      border-radius: 99px;
+      transition: width 0.8s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 8px rgba(255,80,20,0.5);
+      overflow: hidden;
+    }
+    .emergency-fill.repaired {
+      background: linear-gradient(90deg, #005018, #30cc60);
+      box-shadow: 0 0 8px rgba(50,200,80,0.5);
+    }
+    .emergency-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -60%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2.4s ease-in-out infinite;
+    }
+
+    /* ── Festival banner ────────────────────────────── */
+    .festival-banner {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 5px 8px;
+      margin-bottom: 8px;
+      border-radius: 7px;
+      background: rgba(255,195,0,0.1);
+      border: 1px solid rgba(255,200,0,0.4);
+      animation: festivalPulse 2s ease-in-out infinite;
+    }
+    .festival-banner.visible { display: flex; }
+    .festival-label {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      color: #ffe066;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .festival-icon { font-size: 13px; }
+    @keyframes festivalPulse {
+      0%, 100% { box-shadow: 0 0 14px rgba(255,195,0,0.12); border-color: rgba(255,200,0,0.4); }
+      50%       { box-shadow: 0 0 24px rgba(255,195,0,0.28); border-color: rgba(255,210,0,0.7); }
+    }
+
+    /* ── Feed item: festival type ───────────────────── */
+    .feed-item.festival {
+      background: rgba(255,195,0,0.07);
+      border-color: rgba(255,200,0,0.25);
+    }
+    .feed-item.festival .feed-user  { color: #ffe066; }
+    .feed-item.festival .feed-roll  { color: rgba(255,220,80,0.85); }
+    .feed-item.festival .feed-right { color: rgba(255,210,80,0.7); }
+    .feed-item.festival.new         { --flash-col: rgba(255,200,0,0.75); }
+    .feed-item.festival .feed-multiplier {
+      color: #ffe066;
+      background: rgba(255,195,0,0.15);
+      border-color: rgba(255,200,0,0.4);
+    }
+
+    /* ── Shared event overlay (decree / emergency / festival end) ── */
+    .event-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background: rgba(4,12,28,0.96);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      z-index: 11;
+      padding: 16px;
+      border: 1px solid transparent;
+    }
+    .event-overlay.visible { display: flex; }
+    .event-overlay[data-theme="decree"]   { border-color: rgba(180,120,255,0.35); animation: evGlowDecree   2.5s ease-in-out infinite; }
+    .event-overlay[data-theme="success"]  { border-color: rgba(50,200,80,0.4);    animation: evGlowSuccess  2s   ease-in-out infinite; }
+    .event-overlay[data-theme="failure"]  { border-color: rgba(255,60,30,0.4);    animation: evGlowFailure  2s   ease-in-out infinite; }
+    .event-overlay[data-theme="festival"] { border-color: rgba(255,195,0,0.35);   animation: evGlowFestival 2s   ease-in-out infinite; }
+    @keyframes evGlowDecree   { 50% { box-shadow: 0 0 36px rgba(180,120,255,0.2); border-color: rgba(180,120,255,0.6); } }
+    @keyframes evGlowSuccess  { 50% { box-shadow: 0 0 36px rgba(50,200,80,0.22);  border-color: rgba(50,200,80,0.65);  } }
+    @keyframes evGlowFailure  { 50% { box-shadow: 0 0 36px rgba(255,60,30,0.22);  border-color: rgba(255,60,30,0.65);  } }
+    @keyframes evGlowFestival { 50% { box-shadow: 0 0 36px rgba(255,195,0,0.22);  border-color: rgba(255,205,0,0.65);  } }
+
+    .event-icon { font-size: 32px; }
+    .event-title {
+      font-family: 'Cinzel', serif;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .event-overlay[data-theme="decree"]   .event-title { color: #c8a0ff; text-shadow: 0 0 18px rgba(180,120,255,0.6); }
+    .event-overlay[data-theme="success"]  .event-title { color: #60dd80; text-shadow: 0 0 18px rgba(50,200,80,0.65);  }
+    .event-overlay[data-theme="failure"]  .event-title { color: #ff6040; text-shadow: 0 0 18px rgba(255,60,30,0.65);  }
+    .event-overlay[data-theme="festival"] .event-title { color: #ffe066; text-shadow: 0 0 18px rgba(255,200,0,0.65);  }
+    .event-sub {
+      font-size: 11px;
+      color: rgba(180,220,255,0.75);
+      font-weight: 300;
+      text-align: center;
+      padding: 0 8px;
+      line-height: 1.45;
+    }
   </style>
 </head>
 <body>
@@ -502,6 +683,13 @@
     <div class="victory-icon">🏆</div>
     <div class="victory-title">Boss Defeated!</div>
     <div class="victory-sub" id="victoryRewardText">The village receives a reward!</div>
+  </div>
+
+  <!-- Shared event overlay: decree / emergency result / festival end -->
+  <div class="event-overlay" id="eventOverlay" data-theme="decree">
+    <div class="event-icon"  id="eventIcon">📜</div>
+    <div class="event-title" id="eventTitle">Mayor's Decree</div>
+    <div class="event-sub"   id="eventSub"></div>
   </div>
 
   <!-- Header -->
@@ -524,6 +712,22 @@
     </div>
   </div>
 
+  <!-- Emergency repair HP bar -->
+  <div class="emergency-wrap" id="emergencyBar">
+    <div class="emergency-header-row">
+      <span class="emergency-hp-label">Building HP</span>
+      <span class="emergency-hp-values">
+        <span id="emergencyCurrent">0</span> / <span id="emergencyMax">0</span>
+      </span>
+    </div>
+    <div class="emergency-track">
+      <div class="emergency-fill" id="emergencyFill" style="width:30%"></div>
+    </div>
+    <div class="emergency-timer-row">
+      <span class="emergency-timer" id="emergencyTimer">2:00 remaining</span>
+    </div>
+  </div>
+
   <!-- Boss health bar (raid mode only) -->
   <div class="boss-wrap" id="raidBoss">
     <div class="boss-hp-row">
@@ -535,6 +739,13 @@
     <div class="boss-track">
       <div class="boss-fill" id="bossFill" style="width:100%"></div>
     </div>
+  </div>
+
+  <!-- Festival boost banner -->
+  <div class="festival-banner" id="festivalBanner">
+    <span class="festival-icon">🎪</span>
+    <span class="festival-label">Festival Boost Active</span>
+    <span class="festival-icon">🎪</span>
   </div>
 
   <!-- Haste / Battle Frenzy banner -->
@@ -584,50 +795,79 @@
   let bossMaxHP   = 0;
   let raidReward  = 0;
 
+  // ── Festival mode state ────────────────────────────
+  let festivalMode = false;
+
+  // ── Emergency mode state ───────────────────────────
+  let emergencyMode     = false;
+  let emergencyBuilding = "";
+  let emergencyHP       = 0;
+  let emergencyMaxHP    = 0;
+  let emergencyTimerInterval = null;
+  let emergencySecondsLeft   = 0;
+
   // ── Render ─────────────────────────────────────────
   function render(flashTop = false) {
     const panel = document.getElementById("panel");
 
-    // Header
-    document.getElementById("headerIcon").textContent   = raidMode ? "⚔️" : "🐧";
-    document.getElementById("headerLabel").textContent  = raidMode ? "Raid event:" : "Currently building:";
-    document.getElementById("buildingName").textContent = raidMode ? bossName : currentBuilding;
+    // Header — priority: raid > emergency > festival > normal
+    let hIcon, hLabel, hName;
+    if      (raidMode)      { hIcon = "⚔️"; hLabel = "Raid event:";       hName = bossName; }
+    else if (emergencyMode) { hIcon = "🚨"; hLabel = "Emergency repairs:"; hName = emergencyBuilding || currentBuilding; }
+    else if (festivalMode)  { hIcon = "🎪"; hLabel = "Festival event:";    hName = currentBuilding; }
+    else                    { hIcon = "🐧"; hLabel = "Currently building:"; hName = currentBuilding; }
+    document.getElementById("headerIcon").textContent   = hIcon;
+    document.getElementById("headerLabel").textContent  = hLabel;
+    document.getElementById("buildingName").textContent = hName;
 
-    // Progress bar vs boss bar
-    document.getElementById("normalProgress").style.display = raidMode ? "none"  : "block";
-    document.getElementById("raidBoss").style.display       = raidMode ? "block" : "none";
+    // Progress / boss / emergency bars
+    document.getElementById("normalProgress").style.display = (!raidMode && !emergencyMode) ? "block" : "none";
+    document.getElementById("raidBoss").style.display       = raidMode                      ? "block" : "none";
+    document.getElementById("emergencyBar").style.display   = (emergencyMode && !raidMode)  ? "block" : "none";
 
-    if (!raidMode) {
+    if (!raidMode && !emergencyMode) {
       const pct = Math.min(100, (currentProgress / currentGoal) * 100);
       document.getElementById("progressFill").style.width    = pct + "%";
       document.getElementById("progressCurrent").textContent = currentProgress.toLocaleString();
       document.getElementById("progressGoal").textContent    = currentGoal.toLocaleString();
-    } else {
+    } else if (raidMode) {
       const pct  = bossMaxHP > 0 ? Math.max(0, Math.min(100, (bossHP / bossMaxHP) * 100)) : 0;
       const fill = document.getElementById("bossFill");
       fill.style.width = pct + "%";
       fill.classList.toggle("danger", pct > 0 && pct <= 25);
       document.getElementById("bossCurrentHP").textContent  = Math.max(0, bossHP).toLocaleString();
       document.getElementById("bossMaxHPLabel").textContent = bossMaxHP.toLocaleString();
+    } else if (emergencyMode) {
+      const pct  = emergencyMaxHP > 0 ? Math.min(100, (emergencyHP / emergencyMaxHP) * 100) : 0;
+      const fill = document.getElementById("emergencyFill");
+      fill.style.width = pct + "%";
+      fill.classList.toggle("repaired", pct >= 100);
+      document.getElementById("emergencyCurrent").textContent = emergencyHP.toLocaleString();
+      document.getElementById("emergencyMax").textContent     = emergencyMaxHP.toLocaleString();
     }
 
-    // Panel border state — raid takes priority over haste
-    panel.classList.toggle("raid-active",  raidMode);
-    panel.classList.toggle("haste-active", !raidMode && hasteActive);
+    // Panel border state — raid > emergency > festival > haste
+    panel.classList.toggle("raid-active",      raidMode);
+    panel.classList.toggle("emergency-active", emergencyMode && !raidMode);
+    panel.classList.toggle("festival-active",  festivalMode  && !raidMode && !emergencyMode);
+    panel.classList.toggle("haste-active",     hasteActive   && !raidMode && !emergencyMode);
 
-    // Haste / frenzy banner
+    // Banners
     document.getElementById("hasteLabel").textContent = raidMode ? "BATTLE FRENZY ACTIVE" : "DOUBLE BUILD ACTIVE";
     document.getElementById("hasteBanner").classList.toggle("visible", hasteActive);
+    document.getElementById("festivalBanner").classList.toggle("visible", festivalMode && !raidMode && !emergencyMode);
 
     // Feed
     const feed = document.getElementById("feed");
-    feed.classList.toggle("raid", raidMode);
+    feed.classList.toggle("raid",      raidMode);
+    feed.classList.toggle("emergency", emergencyMode && !raidMode);
     feed.innerHTML = "";
 
     builds.slice(0, MAX_ITEMS).forEach((b, i) => {
       const div = document.createElement("div");
       let typeClass = b.type !== "normal" ? " " + b.type : "";
-      if (b.haste && b.type === "normal") typeClass = " haste";
+      if (b.haste    && b.type === "normal") typeClass = " haste";
+      if (b.festival && b.type === "normal" && !b.haste) typeClass = " festival";
       const isNew = i === 0 && flashTop;
       div.className = "feed-item" + typeClass + (isNew ? " new" : "") + (i > 0 ? " fading" : "");
 
@@ -635,15 +875,22 @@
                      : b.type === "critical"   ? 2
                      : b.multiplier > 1        ? b.multiplier
                      : 0;
-      const baseIcon = raidMode ? "⚔️" : "🔨";
+      const baseIcon = raidMode ? "⚔️" : emergencyMode ? "🔧" : "🔨";
       const iconHtml = iconMult > 0
         ? `<span class="feed-multiplier">x${iconMult}</span>`
         : `<span class="feed-icon">${baseIcon}</span>`;
 
-      const prefix    = raidMode ? "-" : "+";
-      const rightText = raidMode
-        ? `HP: ${b.remainingHP !== undefined ? Math.max(0, b.remainingHP).toLocaleString() : "—"}`
-        : `Total ${b.blocksbuilt.toLocaleString()}`;
+      let prefix, rightText;
+      if (raidMode) {
+        prefix    = "-";
+        rightText = `HP: ${b.remainingHP !== undefined ? Math.max(0, b.remainingHP).toLocaleString() : "—"}`;
+      } else if (emergencyMode) {
+        prefix    = "+";
+        rightText = `HP: ${b.remainingHP !== undefined ? Math.min(emergencyMaxHP, b.remainingHP).toLocaleString() : "—"}`;
+      } else {
+        prefix    = "+";
+        rightText = `Total ${b.blocksbuilt.toLocaleString()}`;
+      }
 
       div.innerHTML = `
         ${iconHtml}
@@ -658,13 +905,60 @@
     });
 
     // CTA
-    document.getElementById("cta").innerHTML = raidMode
-      ? '⚔️ Use <span class="cta-highlight">!fight</span> to attack the boss!'
-      : '🐧 Use the <span class="cta-highlight">Build!</span> redeem to test your luck!';
+    let ctaHtml;
+    if      (raidMode)      ctaHtml = '⚔️ Use <span class="cta-highlight">!fight</span> to attack the boss!';
+    else if (emergencyMode) ctaHtml = '🚨 EMERGENCY! Use the <span class="cta-highlight">Build!</span> redeem to repair!';
+    else if (festivalMode)  ctaHtml = '🎪 FESTIVAL! Use the <span class="cta-highlight">Build!</span> redeem — crit chance boosted!';
+    else                    ctaHtml = '🐧 Use the <span class="cta-highlight">Build!</span> redeem to test your luck!';
+    document.getElementById("cta").innerHTML = ctaHtml;
   }
 
   function escHtml(s) {
     return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  // ── Event overlay helpers ──────────────────────────
+  function showEvent(theme, icon, title, sub, duration) {
+    const el = document.getElementById("eventOverlay");
+    el.dataset.theme = theme;
+    document.getElementById("eventIcon").textContent  = icon;
+    document.getElementById("eventTitle").textContent = title;
+    document.getElementById("eventSub").textContent   = sub;
+    el.classList.add("visible");
+    if (duration) setTimeout(hideEvent, duration);
+  }
+
+  function hideEvent() {
+    document.getElementById("eventOverlay").classList.remove("visible");
+  }
+
+  // ── Emergency timer ────────────────────────────────
+  function updateEmergencyTimer() {
+    const el = document.getElementById("emergencyTimer");
+    if (!el) return;
+    const m = Math.floor(emergencySecondsLeft / 60);
+    const s = emergencySecondsLeft % 60;
+    el.textContent = `${m}:${String(s).padStart(2, "0")} remaining`;
+    el.classList.toggle("urgent", emergencySecondsLeft <= 15);
+  }
+
+  function startEmergencyTimer(seconds) {
+    clearInterval(emergencyTimerInterval);
+    emergencySecondsLeft = seconds;
+    updateEmergencyTimer();
+    emergencyTimerInterval = setInterval(() => {
+      emergencySecondsLeft--;
+      updateEmergencyTimer();
+      if (emergencySecondsLeft <= 0) {
+        clearInterval(emergencyTimerInterval);
+        if (emergencyMode) {
+          emergencyMode = false;
+          showEvent("failure", "🏚️", "Repairs Failed!", "The building crumbled before repairs could finish.", 5000);
+          setTimeout(() => { builds = []; render(); }, 5000);
+          render();
+        }
+      }
+    }, 1000);
   }
 
   // ── Normal build ───────────────────────────────────
@@ -672,7 +966,7 @@
     const type = critChance === 100 ? "legendary"
                : userRoll === 20    ? "critical"
                : "normal";
-    builds.unshift({ user, roll, type, haste, multiplier, blocksbuilt });
+    builds.unshift({ user, roll, type, haste, multiplier, blocksbuilt, festival: festivalMode });
     if (builds.length > MAX_ITEMS) builds.pop();
     render(true);
   }
@@ -726,13 +1020,33 @@
         const d    = data?.data;
         if (!d) return;
 
-        // ── Normal mode events ─────────────────────
+        // ── Normal / festival / emergency build ────────
         if (d.event === "village_build") {
           if (raidMode) return;
           hasteActive = d.haste === "active";
           if (d.progress) currentProgress = parseInt(d.progress);
           if (d.building) currentBuilding = d.building;
           if (d.goal)     currentGoal     = parseInt(d.goal);
+
+          if (emergencyMode) {
+            // Route as repair contribution
+            const roll = parseInt(d.roll);
+            const type = parseInt(d.critChance) === 100 ? "legendary"
+                       : parseInt(d.userRoll)   === 20  ? "critical"
+                       : "normal";
+            emergencyHP = Math.min(emergencyMaxHP, emergencyHP + roll);
+            builds.unshift({ user: d.user, roll, type, haste: hasteActive, multiplier: parseInt(d.multiplier), blocksbuilt: parseInt(d.blocksbuilt), remainingHP: emergencyHP });
+            if (builds.length > MAX_ITEMS) builds.pop();
+            if (emergencyHP >= emergencyMaxHP) {
+              clearInterval(emergencyTimerInterval);
+              emergencyMode = false;
+              showEvent("success", "🔧", "Repairs Complete!", "The village stands strong thanks to the community!", 5000);
+              setTimeout(() => { builds = []; render(); }, 5000);
+            }
+            render(true);
+            return;
+          }
+
           addBuild(d.user, parseInt(d.roll), hasteActive, parseInt(d.userRoll), parseInt(d.critChance), parseInt(d.multiplier), parseInt(d.blocksbuilt));
         }
 
@@ -772,6 +1086,58 @@
         if (d.event === "village_raid_end") {
           if (!raidMode) return;
           showVictory(parseInt(d.reward) || raidReward);
+        }
+
+        // ── Festival events ────────────────────────
+        if (d.event === "village_festival_start") {
+          festivalMode = true;
+          builds = [];
+          render();
+        }
+
+        if (d.event === "village_festival_end") {
+          festivalMode = false;
+          showEvent("festival", "🎪", "Festival Over!", "Thanks for celebrating with the Penguin Village!", 4000);
+          render();
+        }
+
+        // ── Emergency events ───────────────────────
+        if (d.event === "village_emergency_start") {
+          emergencyMode     = true;
+          emergencyBuilding = d.building || currentBuilding;
+          emergencyMaxHP    = parseInt(d.maxHP)     || 1000;
+          emergencyHP       = parseInt(d.currentHP) || Math.floor(emergencyMaxHP * 0.3);
+          builds = [];
+          render();
+          startEmergencyTimer(parseInt(d.timeLimit) || 120);
+        }
+
+        if (d.event === "village_emergency_end") {
+          clearInterval(emergencyTimerInterval);
+          if (emergencyMode) {
+            const success = d.success === "true" || d.success === true;
+            emergencyMode = false;
+            showEvent(
+              success ? "success" : "failure",
+              success ? "🔧" : "🏚️",
+              success ? "Repairs Complete!" : "Repairs Failed!",
+              success ? "The village stands strong!" : "The building crumbled before repairs could finish.",
+              5000
+            );
+            setTimeout(() => { builds = []; render(); }, 5000);
+            render();
+          }
+        }
+
+        // ── Mayor's Decree ─────────────────────────
+        if (d.event === "village_decree") {
+          showEvent(
+            "decree",
+            d.icon  || "📜",
+            d.title || "Mayor's Decree",
+            d.text  || "",
+            parseInt(d.duration) || 6000
+          );
         }
 
       } catch(e) { /* ignore malformed messages */ }
