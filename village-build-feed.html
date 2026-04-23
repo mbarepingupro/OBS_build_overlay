@@ -1165,6 +1165,9 @@
 
         if (d.event === "village_raid_attack") {
           if (!raidMode) return;
+          if (d.progress) currentProgress = parseInt(d.progress);
+          if (d.building) currentBuilding = d.building;
+          if (d.goal)     currentGoal     = parseInt(d.goal);
           addAttack(
             d.user,
             parseInt(d.damage),
