@@ -666,6 +666,55 @@
       padding: 0 8px;
       line-height: 1.45;
     }
+
+    /* ── Test panel (only shown with ?test in URL) ─── */
+    .test-panel {
+      margin-top: 10px;
+      background: rgba(0,0,0,0.75);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .test-title {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.25);
+      text-align: center;
+      margin-bottom: 7px;
+    }
+    .test-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 5px;
+      align-items: center;
+    }
+    .test-row:last-child { margin-bottom: 0; }
+    .test-row-label {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.22);
+      width: 100%;
+    }
+    .test-panel button {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 9px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .test-panel button:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .test-row.t-raid     button { border-color: rgba(220,80,60,0.5);   color: rgba(255,150,130,0.9); }
+    .test-row.t-festival button { border-color: rgba(255,200,0,0.45);  color: rgba(255,220,80,0.9);  }
+    .test-row.t-emergency button { border-color: rgba(255,90,20,0.5);  color: rgba(255,160,80,0.9);  }
+    .test-row.t-decree   button { border-color: rgba(180,120,255,0.45);color: rgba(200,160,255,0.9); }
+    .test-row.t-reset    button { border-color: rgba(100,200,255,0.3); color: rgba(140,210,255,0.9); }
   </style>
 </head>
 <body>
@@ -763,6 +812,51 @@
   <!-- Call to action -->
   <div class="cta" id="cta">🐧 Use the <span class="cta-highlight">Build!</span> redeem to test your luck!</div>
 
+</div>
+
+<!-- Test panel: only visible when URL contains ?test -->
+<div class="test-panel" id="testPanel" style="display:none">
+  <div class="test-title">⚙ test mode</div>
+
+  <div class="test-row">
+    <div class="test-row-label">Normal build</div>
+    <button onclick="testBuild('normal')">Normal</button>
+    <button onclick="testBuild('critical')">Nat 20</button>
+    <button onclick="testBuild('legendary')">Legendary</button>
+    <button onclick="testToggleHaste()">Toggle Haste</button>
+  </div>
+
+  <div class="test-row t-raid">
+    <div class="test-row-label">Raid</div>
+    <button onclick="testRaidStart()">Start Raid</button>
+    <button onclick="testRaidAttack()">Attack</button>
+    <button onclick="testRaidEnd()">End (Victory)</button>
+  </div>
+
+  <div class="test-row t-festival">
+    <div class="test-row-label">Festival</div>
+    <button onclick="testFestivalStart()">Start Festival</button>
+    <button onclick="testBuild('normal')">Build (during)</button>
+    <button onclick="testFestivalEnd()">End Festival</button>
+  </div>
+
+  <div class="test-row t-emergency">
+    <div class="test-row-label">Emergency (30s timer)</div>
+    <button onclick="testEmergencyStart()">Start Emergency</button>
+    <button onclick="testEmergencyRepair()">Repair Hit</button>
+    <button onclick="testEmergencyEnd(true)">End ✓ Success</button>
+    <button onclick="testEmergencyEnd(false)">End ✗ Fail</button>
+  </div>
+
+  <div class="test-row t-decree">
+    <div class="test-row-label">Mayor's Decree</div>
+    <button onclick="testDecree()">Show Decree</button>
+  </div>
+
+  <div class="test-row t-reset">
+    <div class="test-row-label">Reset</div>
+    <button onclick="testReset()">Reset All</button>
+  </div>
 </div>
 
 <script>
@@ -1152,6 +1246,116 @@
   }
 
   connect();
+
+  // ── Test panel (activated by ?test in URL) ─────────
+  if (new URLSearchParams(window.location.search).has("test")) {
+    document.getElementById("testPanel").style.display = "block";
+  }
+
+  const TEST_USERS = ["IceFisher","SnowWalker","Tuxedo99","PenguinBob","ArcticFox","FrostByte","IglooBob","Waddles"];
+  let _tui = 0;
+  function _nextUser() { return TEST_USERS[_tui++ % TEST_USERS.length]; }
+
+  function testBuild(type) {
+    if (raidMode) return;
+    const user      = _nextUser();
+    const roll      = type === "legendary" ? 80 : type === "critical" ? 20 : Math.floor(Math.random() * 15) + 2;
+    const critChance = type === "legendary" ? 100 : 0;
+    const userRoll   = type === "critical"  ? 20  : Math.floor(Math.random() * 18) + 1;
+    const mult       = hasteActive ? 2 : 1;
+    currentProgress += roll;
+    addBuild(user, roll, hasteActive, userRoll, critChance, mult, Math.floor(Math.random() * 2000) + 50);
+  }
+
+  function testToggleHaste() {
+    hasteActive = !hasteActive;
+    render();
+  }
+
+  function testRaidStart() {
+    bossName = "The Ice Troll"; bossMaxHP = 500; bossHP = 500; raidReward = 800;
+    raidMode = true; builds = []; render();
+  }
+
+  function testRaidAttack() {
+    if (!raidMode) return;
+    const user   = _nextUser();
+    const dmg    = Math.floor(Math.random() * 40) + 5;
+    const uRoll  = Math.floor(Math.random() * 20) + 1;
+    const crit   = uRoll === 20 ? 0 : 0;
+    addAttack(user, dmg, uRoll, crit, 1, Math.floor(Math.random() * 1000), Math.max(0, bossHP - dmg));
+  }
+
+  function testRaidEnd() {
+    if (!raidMode) return;
+    showVictory(raidReward);
+  }
+
+  function testFestivalStart() {
+    festivalMode = true; builds = []; render();
+  }
+
+  function testFestivalEnd() {
+    festivalMode = false;
+    showEvent("festival", "🎪", "Festival Over!", "Thanks for celebrating with the Penguin Village!", 4000);
+    render();
+  }
+
+  function testEmergencyStart() {
+    emergencyMode = true;
+    emergencyBuilding = currentBuilding;
+    emergencyMaxHP = 500; emergencyHP = 150;
+    builds = []; render();
+    startEmergencyTimer(30);
+  }
+
+  function testEmergencyRepair() {
+    if (!emergencyMode) return;
+    const user  = _nextUser();
+    const roll  = Math.floor(Math.random() * 40) + 10;
+    const uRoll = Math.floor(Math.random() * 20) + 1;
+    emergencyHP = Math.min(emergencyMaxHP, emergencyHP + roll);
+    builds.unshift({ user, roll, type: "normal", haste: false, multiplier: 1, blocksbuilt: 0, remainingHP: emergencyHP });
+    if (builds.length > MAX_ITEMS) builds.pop();
+    if (emergencyHP >= emergencyMaxHP) {
+      clearInterval(emergencyTimerInterval);
+      emergencyMode = false;
+      showEvent("success", "🔧", "Repairs Complete!", "The village stands strong thanks to the community!", 5000);
+      setTimeout(() => { builds = []; render(); }, 5000);
+    }
+    render(true);
+  }
+
+  function testEmergencyEnd(success) {
+    clearInterval(emergencyTimerInterval);
+    if (!emergencyMode) return;
+    emergencyMode = false;
+    showEvent(
+      success ? "success" : "failure",
+      success ? "🔧" : "🏚️",
+      success ? "Repairs Complete!" : "Repairs Failed!",
+      success ? "The village stands strong!" : "The building crumbled before repairs could finish.",
+      5000
+    );
+    setTimeout(() => { builds = []; render(); }, 5000);
+    render();
+  }
+
+  function testDecree() {
+    showEvent("decree", "📜", "Mayor's Decree", "All penguins must wear top hats for the next 10 minutes.", 6000);
+  }
+
+  function testReset() {
+    clearInterval(emergencyTimerInterval);
+    raidMode = false; festivalMode = false; emergencyMode = false; hasteActive = false;
+    currentProgress = 12445; currentGoal = 34000; currentBuilding = "Penguin Tavern";
+    builds = [
+      { user: "IceFisher",  roll: 80, type: "legendary", haste: false, multiplier: 5, blocksbuilt: 1563 },
+      { user: "SnowWalker", roll: 32, type: "critical",  haste: false, multiplier: 2, blocksbuilt: 892  },
+      { user: "PenguinBob", roll: 8,  type: "normal",    haste: false, multiplier: 1, blocksbuilt: 445  },
+    ];
+    render();
+  }
 </script>
 </body>
 </html>
