@@ -13,7 +13,6 @@
       font-family: 'Exo 2', sans-serif;
       width: 340px;
       padding: 10px;
-      overflow: hidden;
       zoom: 2;
     }
 
@@ -814,8 +813,8 @@
 
 </div>
 
-<!-- Test panel: only visible when URL contains ?test -->
-<div class="test-panel" id="testPanel" style="display:none">
+<!-- Test panel -->
+<div class="test-panel" id="testPanel">
   <div class="test-title">⚙ test mode</div>
 
   <div class="test-row">
@@ -1247,11 +1246,7 @@
 
   connect();
 
-  // ── Test panel (activated by ?test in URL) ─────────
-  if (new URLSearchParams(window.location.search).has("test")) {
-    document.getElementById("testPanel").style.display = "block";
-  }
-
+  // ── Test panel ─────────────────────────────────────
   const TEST_USERS = ["IceFisher","SnowWalker","Tuxedo99","PenguinBob","ArcticFox","FrostByte","IglooBob","Waddles"];
   let _tui = 0;
   function _nextUser() { return TEST_USERS[_tui++ % TEST_USERS.length]; }
