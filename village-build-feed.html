@@ -452,24 +452,48 @@
       50%       { box-shadow: inset 0 0 60px rgba(255,215,0,0.09), 0 0 36px rgba(255,215,0,0.18); border-color: rgba(255,215,0,0.5);  }
     }
 
-    /* ── Call to action ─────────────────────────────── */
-    .cta {
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(100,200,255,0.1);
-      font-size: 12px;
-      color: rgba(140,190,230,0.6);
+    /* ── Call to action button ──────────────────────── */
+    .cta-btn {
+      margin-top: 10px;
+      padding: 11px 0 10px;
+      border-radius: 9px;
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
       text-align: center;
-      letter-spacing: 0.04em;
-      font-weight: 300;
-      transition: border-color 0.5s;
+      border: 2px solid;
+      animation: ctaFlash 1.1s ease-in-out infinite;
     }
 
-    .panel.raid-active .cta { border-top-color: rgba(220,80,60,0.15); }
+    .cta-btn.mode-build {
+      background: rgba(20,100,180,0.18);
+      border-color: rgba(93,212,255,0.6);
+      color: #7de0ff;
+      text-shadow: 0 0 18px rgba(93,212,255,0.9);
+    }
+    .cta-btn.mode-fight {
+      background: rgba(160,30,30,0.18);
+      border-color: rgba(255,80,60,0.6);
+      color: #ff9080;
+      text-shadow: 0 0 18px rgba(255,70,50,0.9);
+    }
+    .cta-btn.mode-festival {
+      background: rgba(180,130,0,0.15);
+      border-color: rgba(255,200,0,0.6);
+      color: #ffe566;
+      text-shadow: 0 0 18px rgba(255,200,0,0.9);
+    }
+    .cta-btn.mode-emergency {
+      background: rgba(180,60,10,0.15);
+      border-color: rgba(255,110,50,0.6);
+      color: #ff9060;
+      text-shadow: 0 0 18px rgba(255,90,30,0.9);
+    }
 
-    .cta-highlight {
-      color: rgba(93,212,255,0.9);
-      font-weight: 600;
+    @keyframes ctaFlash {
+      0%, 100% { filter: brightness(0.82); }
+      50%       { filter: brightness(1.22); }
     }
 
     .panel.raid-active .cta-highlight { color: rgba(255,120,100,0.9); }
@@ -494,8 +518,6 @@
     .panel.festival-active .header-icon    { filter: drop-shadow(0 0 8px rgba(255,200,0,0.75)); }
     .panel.festival-active .building-label { color: rgba(255,185,50,0.65); }
     .panel.festival-active .building-name  { color: rgba(255,240,160,0.95); text-shadow: 0 0 14px rgba(255,200,50,0.4); }
-    .panel.festival-active .cta            { border-top-color: rgba(255,185,0,0.15); }
-    .panel.festival-active .cta-highlight  { color: rgba(255,220,80,0.9); }
 
     /* ── Emergency mode ─────────────────────────────── */
     .panel.emergency-active {
@@ -511,8 +533,6 @@
     .panel.emergency-active .header-icon    { filter: drop-shadow(0 0 8px rgba(255,80,0,0.8)); }
     .panel.emergency-active .building-label { color: rgba(255,100,50,0.65); }
     .panel.emergency-active .building-name  { color: rgba(255,200,160,0.95); text-shadow: 0 0 14px rgba(255,80,30,0.45); }
-    .panel.emergency-active .cta            { border-top-color: rgba(255,80,30,0.15); }
-    .panel.emergency-active .cta-highlight  { color: rgba(255,140,80,0.9); }
 
     /* ── Emergency HP bar ───────────────────────────── */
     .emergency-wrap { display: none; margin-bottom: 10px; }
@@ -808,8 +828,8 @@
 
   <div class="offline-notice" id="offlineNotice">⚠ disconnected from streamerbot</div>
 
-  <!-- Call to action -->
-  <div class="cta" id="cta">🐧 Use the <span class="cta-highlight">Build!</span> redeem to test your luck!</div>
+  <!-- Call to action button -->
+  <div class="cta-btn mode-build" id="ctaBtn">!Build</div>
 
 </div>
 
@@ -997,13 +1017,12 @@
       feed.appendChild(div);
     });
 
-    // CTA
-    let ctaHtml;
-    if      (raidMode)      ctaHtml = '⚔️ Use <span class="cta-highlight">!fight</span> to attack the boss!';
-    else if (emergencyMode) ctaHtml = '🚨 EMERGENCY! Use the <span class="cta-highlight">Build!</span> redeem to repair!';
-    else if (festivalMode)  ctaHtml = '🎪 FESTIVAL! Use the <span class="cta-highlight">Build!</span> redeem — crit chance boosted!';
-    else                    ctaHtml = '🐧 Use the <span class="cta-highlight">Build!</span> redeem to test your luck!';
-    document.getElementById("cta").innerHTML = ctaHtml;
+    // CTA button
+    const ctaBtn = document.getElementById("ctaBtn");
+    if      (raidMode)      { ctaBtn.className = "cta-btn mode-fight";     ctaBtn.textContent = "!fight";  }
+    else if (emergencyMode) { ctaBtn.className = "cta-btn mode-emergency"; ctaBtn.textContent = "!Build";  }
+    else if (festivalMode)  { ctaBtn.className = "cta-btn mode-festival";  ctaBtn.textContent = "!Build";  }
+    else                    { ctaBtn.className = "cta-btn mode-build";     ctaBtn.textContent = "!Build";  }
   }
 
   function escHtml(s) {
