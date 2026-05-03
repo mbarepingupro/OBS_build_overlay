@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Combo Bar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: transparent;
+      font-family: 'Exo 2', sans-serif;
+      width: 420px;
+      padding: 10px;
+    }
+
+    /* ── Panel ─────────────────────────────────────── */
+    .panel {
+      position: relative;
+      background: linear-gradient(160deg, rgba(22,12,4,0.90) 0%, rgba(30,16,4,0.88) 100%);
+      border: 1.5px solid rgba(255,140,0,0.18);
+      border-radius: 14px;
+      padding: 14px 16px 14px;
+      box-shadow: 0 0 32px rgba(255,120,0,0.06), inset 0 1px 0 rgba(255,200,100,0.07);
+      backdrop-filter: blur(8px);
+      overflow: hidden;
+      transition: border-color 0.5s, box-shadow 0.5s, opacity 0.6s;
+    }
+
+    /* Idle */
+    .panel.idle {
+      opacity: 0.65;
+      border-color: rgba(255,255,255,0.08);
+      box-shadow: none;
+    }
+
+    /* Active (tier 1 & 2) */
+    .panel.active {
+      border-color: rgba(255,140,0,0.45);
+      box-shadow: 0 0 32px rgba(255,120,0,0.12), inset 0 1px 0 rgba(255,200,100,0.10);
+    }
+
+    /* Tier 3 */
+    .panel.tier3 {
+      border-color: rgba(255,75,0,0.65);
+      box-shadow: 0 0 44px rgba(255,60,0,0.20), inset 0 1px 0 rgba(255,200,100,0.14);
+      animation: tier3Pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes tier3Pulse {
+      0%, 100% { box-shadow: 0 0 36px rgba(255,60,0,0.16), inset 0 1px 0 rgba(255,200,100,0.12); }
+      50%       { box-shadow: 0 0 56px rgba(255,80,0,0.30), inset 0 1px 0 rgba(255,220,120,0.18); }
+    }
+
+    /* ── Corner accents ─────────────────────────────── */
+    .accent {
+      position: absolute;
+      font-size: 10px;
+      color: #ff8020;
+      opacity: 0.22;
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 0.5s;
+    }
+    .ac-tl { top: 7px;    left: 10px;  }
+    .ac-tr { top: 7px;    right: 10px; }
+    .ac-bl { bottom: 7px; left: 10px;  }
+    .ac-br { bottom: 7px; right: 10px; }
+    .panel.idle .accent { opacity: 0.07; }
+
+    /* ── Tier-complete flash overlay ────────────────── */
+    .tier-flash {
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .tier-flash.animate {
+      animation: tierFlash 1s ease-out forwards;
+    }
+    @keyframes tierFlash {
+      0%   { opacity: 1; box-shadow: inset 0 0 70px rgba(255,220,60,0.55); }
+      100% { opacity: 0; box-shadow: inset 0 0 0px transparent; }
+    }
+
+    /* ── Idle state ─────────────────────────────────── */
+    .idle-message {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 0 4px;
+      gap: 8px;
+    }
+    .panel.idle .idle-message { display: flex; }
+    .panel.idle .active-content { display: none; }
+
+    .idle-icon {
+      font-size: 22px;
+      opacity: 0.38;
+    }
+    .idle-text {
+      font-size: 12px;
+      color: rgba(255,255,255,0.32);
+      letter-spacing: 0.06em;
+      font-style: italic;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,140,0,0.15);
+    }
+
+    .header-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+      line-height: 1;
+      filter: drop-shadow(0 0 8px rgba(255,160,0,0.65));
+    }
+
+    .header-title {
+      font-family: 'Cinzel', serif;
+      font-size: 15px;
+      color: rgba(255,220,160,0.97);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(255,160,0,0.45);
+      flex: 1;
+    }
+
+    /* ── Tier badge ─────────────────────────────────── */
+    .tier-badge {
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.10em;
+      padding: 3px 11px;
+      border-radius: 99px;
+      border: 1px solid rgba(255,140,0,0.45);
+      background: rgba(255,120,0,0.12);
+      color: #ffb347;
+      text-transform: uppercase;
+      white-space: nowrap;
+      transition: background 0.4s, border-color 0.4s, color 0.4s;
+    }
+
+    .panel.tier3 .tier-badge {
+      border-color: rgba(255,75,0,0.7);
+      background: rgba(255,55,0,0.16);
+      color: #ff7030;
+      animation: tier3BadgePulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes tier3BadgePulse {
+      0%, 100% { box-shadow: none; }
+      50%       { box-shadow: 0 0 14px rgba(255,80,0,0.5); }
+    }
+
+    /* ── Mid row: multiplier + progress label ───────── */
+    .mid-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .mult-block { line-height: 1; }
+
+    .mid-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      color: rgba(255,180,80,0.45);
+      margin-bottom: 3px;
+    }
+
+    .mult-value {
+      font-family: 'Cinzel', serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: #ffb347;
+      letter-spacing: 0.04em;
+      text-shadow: 0 0 16px rgba(255,160,0,0.55);
+      line-height: 1;
+      transition: color 0.4s, text-shadow 0.4s;
+    }
+
+    .panel.tier3 .mult-value {
+      color: #ff6020;
+      text-shadow: 0 0 22px rgba(255,80,0,0.75);
+    }
+
+    .progress-label-block { text-align: right; line-height: 1; }
+
+    .progress-count {
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(255,210,120,0.90);
+      letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .progress-goal-text {
+      font-size: 10px;
+      color: rgba(255,180,80,0.38);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Progress bar ───────────────────────────────── */
+    .progress-wrap { margin-bottom: 10px; }
+
+    .progress-track {
+      height: 9px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 99px;
+      overflow: hidden;
+      border: 1px solid rgba(255,140,0,0.10);
+    }
+
+    .progress-fill {
+      position: relative;
+      height: 100%;
+      background: linear-gradient(90deg, #c05000, #ff9020, #ffcc55);
+      border-radius: 99px;
+      transition: width 0.65s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 0 12px rgba(255,140,0,0.55);
+      overflow: hidden;
+    }
+
+    .panel.tier3 .progress-fill {
+      background: linear-gradient(90deg, #8a0000, #dd3800, #ff7820);
+      box-shadow: 0 0 16px rgba(255,70,0,0.65);
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -60%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+      animation: shimmer 2.2s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%   { left: -60%; }
+      100% { left: 130%; }
+    }
+
+    /* ── Timer row ──────────────────────────────────── */
+    .timer-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .timer-icon {
+      font-size: 11px;
+      opacity: 0.48;
+    }
+
+    .timer-value {
+      font-family: 'Cinzel', serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255,200,100,0.82);
+      letter-spacing: 0.10em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-value.urgent {
+      color: rgba(255,75,35,0.95);
+      animation: timerUrgent 0.55s ease-in-out infinite;
+    }
+
+    @keyframes timerUrgent {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.40; }
+    }
+
+    .timer-label {
+      font-size: 10px;
+      color: rgba(255,180,80,0.38);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Offline notice ─────────────────────────────── */
+    .offline-notice {
+      display: none;
+      font-size: 9px;
+      color: rgba(255,100,100,0.6);
+      text-align: center;
+      margin-top: 8px;
+      letter-spacing: 0.06em;
+    }
+    .offline-notice.visible { display: block; }
+
+    /* ── Test panel ─────────────────────────────────── */
+    .test-panel {
+      margin-top: 10px;
+      background: rgba(0,0,0,0.75);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .test-title {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.25);
+      text-align: center;
+      margin-bottom: 7px;
+    }
+    .test-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 5px;
+      align-items: center;
+    }
+    .test-row:last-child { margin-bottom: 0; }
+    .test-row-label {
+      font-size: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.22);
+      width: 100%;
+    }
+    .test-panel button {
+      font-family: 'Exo 2', sans-serif;
+      font-size: 9px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,140,0,0.30);
+      background: rgba(255,140,0,0.07);
+      color: rgba(255,180,80,0.80);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .test-panel button:hover { background: rgba(255,140,0,0.18); color: #ffb347; }
+    .test-row.t-reset button {
+      border-color: rgba(100,200,255,0.30);
+      background: rgba(100,200,255,0.05);
+      color: rgba(140,210,255,0.85);
+    }
+    .test-row.t-reset button:hover { background: rgba(100,200,255,0.12); }
+  </style>
+</head>
+<body>
+
+<div class="panel idle" id="panel">
+
+  <span class="accent ac-tl">◆</span>
+  <span class="accent ac-tr">◆</span>
+  <span class="accent ac-bl">◆</span>
+  <span class="accent ac-br">◆</span>
+
+  <div class="tier-flash" id="tierFlash"></div>
+
+  <!-- Idle state -->
+  <div class="idle-message">
+    <div class="idle-icon">⚡</div>
+    <div class="idle-text">Kick off a combo to unlock the bar!</div>
+  </div>
+
+  <!-- Active content -->
+  <div class="active-content">
+
+    <div class="header">
+      <span class="header-icon" id="headerIcon">⚡</span>
+      <span class="header-title">Build Combo</span>
+      <span class="tier-badge" id="tierBadge">TIER 1</span>
+    </div>
+
+    <div class="mid-row">
+      <div class="mult-block">
+        <div class="mid-label">Multiplier</div>
+        <div class="mult-value" id="multValue">1.5x</div>
+      </div>
+      <div class="progress-label-block">
+        <div class="mid-label" style="text-align:right">Progress</div>
+        <div class="progress-count" id="progressCount">0</div>
+        <div class="progress-goal-text">/ 50</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="timer-row">
+      <span class="timer-icon">⏱</span>
+      <span class="timer-value" id="timerValue">20:00</span>
+      <span class="timer-label">remaining</span>
+    </div>
+
+  </div>
+
+  <div class="offline-notice" id="offlineNotice">⚠ disconnected from streamerbot</div>
+
+</div>
+
+<!-- Test panel (only visible at ?test in URL) -->
+<div class="test-panel" id="testPanel" style="display:none">
+  <div class="test-title">⚙ combo bar — test mode</div>
+
+  <div class="test-row">
+    <div class="test-row-label">Build events</div>
+    <button onclick="testBuild(1,0)">Normal (+1)</button>
+    <button onclick="testBuild(20,0)">Nat 20 (+2)</button>
+    <button onclick="testBuild(1,100)">Crit (+5)</button>
+    <button onclick="testBurst(10)">Burst ×10</button>
+    <button onclick="testBurst(50)">Fill tier</button>
+  </div>
+
+  <div class="test-row t-reset">
+    <div class="test-row-label">Reset</div>
+    <button onclick="handleComboReset()">combo_reset</button>
+  </div>
+</div>
+
+<script>
+  const WS_URL = "ws://127.0.0.1:8080/";
+
+  const TIERS = [
+    { goal: 50, duration: 20 * 60, multiplier: "1.5", label: "TIER 1" },
+    { goal: 50, duration: 15 * 60, multiplier: "3",   label: "TIER 2" },
+    { goal: 50, duration: 10 * 60, multiplier: "6",   label: "TIER 3 🔥" },
+  ];
+  const MAX_TIER_IDX = TIERS.length - 1;
+
+  let active        = false;
+  let tierIdx       = 0;
+  let comboProgress = 0;
+  let secondsLeft   = 0;
+  let timerInterval = null;
+
+  // ── WebSocket ──────────────────────────────────────
+  let ws;
+
+  function connect() {
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      document.getElementById("offlineNotice").classList.remove("visible");
+      ws.send(JSON.stringify({
+        request: "Subscribe",
+        id: "combo-bar",
+        events: { General: ["Custom"] }
+      }));
+    };
+
+    ws.onmessage = ({ data }) => {
+      try {
+        const msg = JSON.parse(data);
+        const d   = msg?.data;
+        if (!d) return;
+
+        if (d.event === "village_build") {
+          const userRoll   = parseInt(d.userRoll)   || 0;
+          const critChance = parseInt(d.critChance) || 0;
+          handleBuildIncrement(userRoll, critChance);
+        }
+
+        if (d.event === "combo_reset") {
+          handleComboReset();
+        }
+
+      } catch {}
+    };
+
+    ws.onclose = () => {
+      document.getElementById("offlineNotice").classList.add("visible");
+      setTimeout(connect, 3000);
+    };
+    ws.onerror = () => ws.close();
+  }
+
+  // ── Build logic ────────────────────────────────────
+  function handleBuildIncrement(userRoll, critChance) {
+    const increment = critChance === 100 ? 5
+                    : userRoll === 20    ? 2
+                    : 1;
+
+    if (!active) activateCombo();
+
+    comboProgress += increment;
+
+    if (comboProgress >= TIERS[tierIdx].goal) {
+      handleTierComplete();
+    } else {
+      render();
+    }
+  }
+
+  function activateCombo() {
+    active        = true;
+    tierIdx       = 0;
+    comboProgress = 0;
+    startCountdown(TIERS[0].duration);
+  }
+
+  // ── Tier complete ──────────────────────────────────
+  function handleTierComplete() {
+    sendWS({ event: "combo_tier_reached", tier: tierIdx + 1 });
+
+    flashPanel();
+
+    if (tierIdx < MAX_TIER_IDX) tierIdx++;
+    // At tier 3 it stays, timer just resets
+
+    comboProgress = 0;
+    startCountdown(TIERS[tierIdx].duration);
+    render();
+  }
+
+  // ── Countdown ─────────────────────────────────────
+  function startCountdown(seconds) {
+    clearInterval(timerInterval);
+    secondsLeft   = seconds;
+    timerInterval = setInterval(tickTimer, 1000);
+  }
+
+  function tickTimer() {
+    if (!active) { clearInterval(timerInterval); return; }
+    secondsLeft = Math.max(0, secondsLeft - 1);
+    updateTimerDisplay();
+    if (secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      sendWS({ event: "combo_expired" });
+      handleComboReset();
+    }
+  }
+
+  // ── Reset ──────────────────────────────────────────
+  function handleComboReset() {
+    clearInterval(timerInterval);
+    active        = false;
+    tierIdx       = 0;
+    comboProgress = 0;
+    secondsLeft   = 0;
+    render();
+  }
+
+  // ── WS send ────────────────────────────────────────
+  function sendWS(obj) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(obj));
+    }
+  }
+
+  // ── Tier-complete flash ────────────────────────────
+  function flashPanel() {
+    const el = document.getElementById("tierFlash");
+    el.classList.remove("animate");
+    void el.offsetWidth;
+    el.classList.add("animate");
+    setTimeout(() => el.classList.remove("animate"), 1000);
+  }
+
+  // ── Render ─────────────────────────────────────────
+  function render() {
+    const panel = document.getElementById("panel");
+    const tier  = TIERS[tierIdx];
+    const pct   = active ? Math.min(100, (comboProgress / tier.goal) * 100) : 0;
+
+    panel.classList.toggle("idle",   !active);
+    panel.classList.toggle("active", active && tierIdx < MAX_TIER_IDX);
+    panel.classList.toggle("tier3",  active && tierIdx >= MAX_TIER_IDX);
+
+    if (!active) return;
+
+    document.getElementById("tierBadge").textContent    = tier.label;
+    document.getElementById("headerIcon").textContent   = tierIdx >= MAX_TIER_IDX ? "🔥" : "⚡";
+    document.getElementById("multValue").textContent    = tier.multiplier + "x";
+    document.getElementById("progressCount").textContent = comboProgress;
+    document.getElementById("progressFill").style.width = pct + "%";
+
+    updateTimerDisplay();
+  }
+
+  function updateTimerDisplay() {
+    const el = document.getElementById("timerValue");
+    if (!el || !active) return;
+    const m = Math.floor(secondsLeft / 60);
+    const s = secondsLeft % 60;
+    el.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    el.classList.toggle("urgent", secondsLeft <= 30 && secondsLeft > 0);
+  }
+
+  render();
+  connect();
+
+  // ── Test helpers ───────────────────────────────────
+  if (new URLSearchParams(window.location.search).has("test")) {
+    document.getElementById("testPanel").style.display = "block";
+  }
+
+  function testBuild(userRoll, critChance) {
+    handleBuildIncrement(userRoll, critChance);
+  }
+
+  function testBurst(n) {
+    for (let i = 0; i < n; i++) handleBuildIncrement(1, 0);
+  }
+</script>
+</body>
+</html>
