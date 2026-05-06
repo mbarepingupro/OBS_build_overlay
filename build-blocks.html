@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Build Blocks</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: transparent; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+const { Engine, World, Bodies, Body } = Matter;
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let W = 0, H = 0;
+
+const engine = Engine.create({ gravity: { x: 0, y: 1.5 } });
+const world = engine.world;
+
+// Wide static floor, re-centred on every resize
+const ground = Bodies.rectangle(960, 1120, 10000, 50, {
+  isStatic: true,
+  restitution: 0.25,
+  friction: 0.85,
+  label: 'ground'
+});
+World.add(world, ground);
+
+const blocks    = []; // { body, spawnTime, type }
+const particles = []; // { x, y, maxR, startTime, duration }
+
+const LIFETIME      = 20000;
+const FADE_START    = 17000; // begin fade 3 s before removal
+
+function resize() {
+  W = canvas.width  = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  Body.setPosition(ground, { x: W / 2, y: H + 25 });
+}
+window.addEventListener('resize', resize);
+resize();
+
+// ── Spawning ──────────────────────────────────────────────────────
+
+function spawnBlocks(count, type) {
+  for (let i = 0; i < count; i++) {
+    const size = type === 'normal' ? 20 : 25;
+    const x    = 10 + Math.random() * (W - 20);
+    const y    = -size - Math.random() * 60;
+
+    const body = Bodies.rectangle(x, y, size, size, {
+      restitution : 0.3,
+      friction    : 0.5,
+      frictionAir : 0.008,
+      density     : 0.002,
+      label       : type
+    });
+
+    Body.setVelocity(body, {
+      x: (Math.random() - 0.5) * 5,
+      y: 0.5 + Math.random() * 1.5
+    });
+    Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.15);
+
+    World.add(world, body);
+    blocks.push({ body, spawnTime: performance.now(), type });
+
+    if (type === 'crit') {
+      setTimeout(() => spawnFlash(x, 20 + Math.random() * 40), i * 25);
+    }
+  }
+}
+
+function spawnFlash(x, y) {
+  particles.push({
+    x, y,
+    maxR     : 35 + Math.random() * 20,
+    startTime: performance.now(),
+    duration : 380 + Math.random() * 180
+  });
+}
+
+// ── Drawing ───────────────────────────────────────────────────────
+
+function drawBrick(x, y, w, h, angle, type, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  const hw = w / 2, hh = h / 2;
+
+  // Glow for crit — applied to main fill only
+  if (type === 'crit') {
+    ctx.shadowColor = '#cc44ff';
+    ctx.shadowBlur  = 10;
+  }
+
+  // Main face
+  ctx.fillStyle = type === 'normal' ? '#666'
+                : type === 'gold'   ? '#c8901a'
+                :                     '#6b1fa8';
+  ctx.fillRect(-hw, -hh, w, h);
+
+  ctx.shadowBlur = 0;
+
+  // Dark outer border
+  ctx.strokeStyle = type === 'normal' ? '#2a2a2a'
+                  : type === 'gold'   ? '#6a4500'
+                  :                     '#2d0050';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(-hw + 0.5, -hh + 0.5, w - 1, h - 1);
+
+  // Top-left highlight edge
+  ctx.fillStyle = type === 'normal' ? 'rgba(255,255,255,0.22)'
+                : type === 'gold'   ? 'rgba(255,245,100,0.4)'
+                :                     'rgba(220,100,255,0.4)';
+  ctx.fillRect(-hw + 1, -hh + 1, w - 2, 2);
+  ctx.fillRect(-hw + 1, -hh + 1, 2, h - 2);
+
+  // Bottom-right shadow edge
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(-hw + 1, hh - 3,  w - 2, 2);
+  ctx.fillRect(hw  - 3, -hh + 1, 2,     h - 2);
+
+  // Stone: mortar lines (normal blocks only)
+  if (type === 'normal') {
+    const mx = Math.round(w / 2);
+    const my = Math.round(h / 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    // Horizontal mortar
+    ctx.fillRect(-hw + 3, -hh + my, w - 6, 1);
+    // Vertical mortars — staggered offset per row
+    ctx.fillRect(-hw + mx,             -hh + 3, 1, my - 3);
+    ctx.fillRect(-hw + Math.round(w / 4), my - hh, 1, my - 3);
+  }
+
+  ctx.restore();
+}
+
+// ── Main loop ─────────────────────────────────────────────────────
+
+let lastTime = performance.now();
+
+function loop(now) {
+  requestAnimationFrame(loop);
+
+  const delta = Math.min(now - lastTime, 50); // cap to avoid spiral-of-death
+  lastTime = now;
+
+  Engine.update(engine, delta);
+  ctx.clearRect(0, 0, W, H);
+
+  // Blocks
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const b   = blocks[i];
+    const age = now - b.spawnTime;
+    const pos = b.body.position;
+
+    // Remove bodies that have escaped the sides or gone way below floor
+    if (pos.y > H + 300 || Math.abs(pos.x - W / 2) > W + 300) {
+      World.remove(world, b.body);
+      blocks.splice(i, 1);
+      continue;
+    }
+
+    if (age >= LIFETIME) {
+      World.remove(world, b.body);
+      blocks.splice(i, 1);
+      continue;
+    }
+
+    const alpha = age < FADE_START
+      ? 1
+      : Math.max(0, 1 - (age - FADE_START) / (LIFETIME - FADE_START));
+
+    const size = b.type === 'normal' ? 20 : 25;
+    drawBrick(pos.x, pos.y, size, size, b.body.angle, b.type, alpha);
+  }
+
+  // Crit flash rings
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p   = particles[i];
+    const age = now - p.startTime;
+
+    if (age >= p.duration) { particles.splice(i, 1); continue; }
+
+    const t = age / p.duration;
+    ctx.save();
+    ctx.globalAlpha = (1 - t) * 0.75;
+    ctx.strokeStyle = '#da70ff';
+    ctx.lineWidth   = 2;
+    ctx.shadowColor = '#da70ff';
+    ctx.shadowBlur  = 6;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.maxR * t, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+requestAnimationFrame(loop);
+
+// ── WebSocket ─────────────────────────────────────────────────────
+
+let retryDelay = 1000;
+let retryTimer = null;
+
+function connect() {
+  if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
+
+  const ws = new WebSocket('ws://127.0.0.1:8080/');
+
+  ws.onopen = () => {
+    retryDelay = 1000;
+    console.log('[build-blocks] connected');
+  };
+
+  ws.onmessage = (evt) => {
+    let msg;
+    try { msg = JSON.parse(evt.data); } catch { return; }
+    if (msg.event !== 'village_build') return;
+
+    const roll      = Math.max(1, Math.round(+msg.roll      || 1));
+    const userRoll  = +msg.userRoll;
+    const critChance = +msg.critChance;
+
+    const type = userRoll === 20   ? 'gold'
+               : critChance === 100 ? 'crit'
+               :                      'normal';
+
+    spawnBlocks(roll, type);
+  };
+
+  ws.onclose = () => {
+    retryDelay = Math.min(retryDelay * 2, 10000);
+    console.log(`[build-blocks] disconnected — retry in ${retryDelay}ms`);
+    retryTimer = setTimeout(connect, retryDelay);
+  };
+}
+
+connect();
+</script>
+</body>
+</html>
