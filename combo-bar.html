@@ -479,15 +479,20 @@
 
   // ── Tier complete ──────────────────────────────────
   function handleTierComplete() {
-    sendWS({ event: "combo_tier_reached", tier: tierIdx + 1 }); // 1-indexed
     flashPanel();
 
-    const overflow = comboProgress - TIERS[tierIdx].goal;
+    const completedTier = tierIdx + 1; // 1-indexed, for the event payload
+    const overflow      = comboProgress - TIERS[tierIdx].goal;
+
+    // Advance tier first so the multiplier we send IS the new tier's value
     if (tierIdx < MAX_TIER_IDX) tierIdx++;
     // At max tier: stays tier 3, resets progress + timer only
 
     comboProgress = Math.max(0, overflow); // carry excess into the new tier
     startCountdown(TIERS[tierIdx].duration);
+
+    // Send AFTER advancing: multiplier is the value Streamerbot should now apply
+    sendWS({ event: "combo_tier_reached", tier: completedTier, multiplier: parseFloat(TIERS[tierIdx].multiplier) });
     render();
   }
 
@@ -504,7 +509,7 @@
     updateTimerDisplay();
     if (secondsLeft <= 0) {
       clearInterval(timerInterval);
-      sendWS({ event: "combo_expired" });
+      sendWS({ event: "combo_expired", multiplier: 1 });
       handleComboReset();
     }
   }
