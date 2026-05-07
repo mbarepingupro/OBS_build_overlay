@@ -482,10 +482,11 @@
     sendWS({ event: "combo_tier_reached", tier: tierIdx + 1 }); // 1-indexed
     flashPanel();
 
+    const overflow = comboProgress - TIERS[tierIdx].goal;
     if (tierIdx < MAX_TIER_IDX) tierIdx++;
     // At max tier: stays tier 3, resets progress + timer only
 
-    comboProgress = 0;
+    comboProgress = Math.max(0, overflow); // carry excess into the new tier
     startCountdown(TIERS[tierIdx].duration);
     render();
   }
