@@ -278,18 +278,24 @@ function connect() {
   ws.onopen = () => {
     retryDelay = 1000;
     console.log('[build-blocks] connected');
+    ws.send(JSON.stringify({
+      request: 'Subscribe',
+      id: 'build-blocks',
+      events: { General: ['Custom'] }
+    }));
   };
 
   ws.onmessage = (evt) => {
     let msg;
     try { msg = JSON.parse(evt.data); } catch { return; }
-    if (msg.event !== 'village_build') return;
+    const d = msg?.data;
+    if (!d || d.event !== 'village_build') return;
 
-    const roll      = Math.max(1, Math.round(+msg.roll      || 1));
-    const userRoll  = +msg.userRoll;
-    const critChance = +msg.critChance;
+    const roll       = Math.max(1, Math.round(+d.roll      || 1));
+    const userRoll   = +d.userRoll;
+    const critChance = +d.critChance;
 
-    const type = userRoll === 20   ? 'gold'
+    const type = userRoll === 20    ? 'gold'
                : critChance === 100 ? 'crit'
                :                      'normal';
 
