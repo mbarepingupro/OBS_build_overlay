@@ -7,10 +7,68 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; background: transparent; overflow: hidden; }
     canvas { display: block; }
+
+    /* ── Test panel (only shown with ?test in URL) ── */
+    .test-panel {
+      position: fixed;
+      top: 12px; left: 12px;
+      z-index: 9999;
+      background: rgba(10,10,20,0.82);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
+      padding: 10px 14px 12px;
+      font-family: monospace;
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      display: none;
+    }
+    .test-panel h4 {
+      margin-bottom: 8px;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+    }
+    .test-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+    .test-row:last-child { margin-bottom: 0; }
+    .test-label { width: 72px; font-size: 11px; color: rgba(255,255,255,0.5); }
+    .test-panel button {
+      padding: 3px 10px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 4px;
+      color: rgba(255,255,255,0.75);
+      font-family: monospace;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .test-panel button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .btn-gold   { border-color: rgba(210,160,20,0.6)  !important; color: rgba(255,220,80,0.9)  !important; }
+    .btn-crit   { border-color: rgba(180,60,255,0.6)  !important; color: rgba(210,130,255,0.9) !important; }
   </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+
+<!-- Test panel — only visible at ?test URL -->
+<div class="test-panel" id="testPanel">
+  <h4>⚙ build-blocks test</h4>
+  <div class="test-row">
+    <span class="test-label">Normal</span>
+    <button onclick="testFire('normal',5)">×5</button>
+    <button onclick="testFire('normal',10)">×10</button>
+    <button onclick="testFire('normal',20)">×20</button>
+  </div>
+  <div class="test-row">
+    <span class="test-label">Nat 20</span>
+    <button class="btn-gold" onclick="testFire('gold',20)">×20 gold</button>
+  </div>
+  <div class="test-row">
+    <span class="test-label">Crit</span>
+    <button class="btn-crit" onclick="testFire('crit',14)">×14 crit</button>
+    <button class="btn-crit" onclick="testFire('crit',20)">×20 crit</button>
+  </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 <script>
 const { Engine, World, Bodies, Body } = Matter;
@@ -246,6 +304,14 @@ function connect() {
 }
 
 connect();
+
+// ── Test panel ────────────────────────────────────────────────────
+
+function testFire(type, count) { spawnBlocks(count, type); }
+
+if (new URLSearchParams(window.location.search).has('test')) {
+  document.getElementById('testPanel').style.display = 'block';
+}
 </script>
 </body>
 </html>
