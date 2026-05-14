@@ -372,12 +372,18 @@
 <script>
   const WS_URL = "ws://127.0.0.1:8080/";
 
+  // ── Tier config ────────────────────────────────────
+  // To add a new tier: add a line here AND create a matching
+  // "Combo - Set Multiplier X" action in Streamerbot, then paste its ID in actionId.
   const TIERS = [
-    { goal: 10, duration: 20 * 60, multiplier: "2", label: "TIER 1" },
-    { goal: 20, duration: 15 * 60, multiplier: "3", label: "TIER 2" },
-    { goal: 30, duration: 10 * 60, multiplier: "6", label: "TIER 3 🔥" },
+    { goal: 10, duration: 20 * 60, multiplier: "2", label: "TIER 1", actionId: "7c825375-3c12-49ae-9d16-cf7e6e5485bd" },
+    { goal: 20, duration: 15 * 60, multiplier: "3", label: "TIER 2", actionId: "894ba9a0-e7f6-4107-b714-9ce05abb0205" },
+    { goal: 30, duration: 10 * 60, multiplier: "6", label: "TIER 3 🔥", actionId: "159c414c-77a8-4d88-a932-58a892e8eba1" },
   ];
   const MAX_TIER_IDX = TIERS.length - 1;
+
+  // Streamerbot action that sets multiplier back to 1 on combo expiry
+  const RESET_MULTIPLIER_ACTION_ID = "762a3430-9909-4057-8e83-8ab1c1b79fcf";
 
   const ACTIVATION_BUILDS = 3;
   const ACTIVATION_WINDOW = 60 * 1000;
@@ -456,6 +462,7 @@
     tierIdx       = 0;
     comboProgress = 0;
     startCountdown(TIERS[0].duration);
+    runAction(TIERS[0].actionId); // set multiplier immediately on activation
     render();
   }
 
@@ -464,14 +471,11 @@
     flashPanel();
 
     const overflow = comboProgress - TIERS[tierIdx].goal;
-
     if (tierIdx < MAX_TIER_IDX) tierIdx++;
 
     comboProgress = Math.max(0, overflow);
     startCountdown(TIERS[tierIdx].duration);
-
-    // FIX: correctly calls DoAction to set multiplier in Streamerbot
-    setGlobal("multiplier", parseFloat(TIERS[tierIdx].multiplier));
+    runAction(TIERS[tierIdx].actionId); // set multiplier to new tier value
     render();
   }
 
@@ -482,21 +486,13 @@
     timerInterval = setInterval(tickTimer, 1000);
   }
 
-  // FIX: sendWS call closes properly before handleComboReset
   function tickTimer() {
     if (!active) { clearInterval(timerInterval); return; }
     secondsLeft = Math.max(0, secondsLeft - 1);
     updateTimerDisplay();
     if (secondsLeft <= 0) {
       clearInterval(timerInterval);
-      sendWS({
-        request: "DoAction",
-        action: { 
-          id: "762a3430-9909-4057-8e83-8ab1c1b79fcf",
-          name: "Combo - Reset Multiplier" 
-        },
-        args: { value: 1 }
-      });
+      runAction(RESET_MULTIPLIER_ACTION_ID); // reset multiplier to 1
       handleComboReset();
     }
   }
@@ -512,21 +508,14 @@
     render();
   }
 
-  // ── WS send ────────────────────────────────────────
+  // ── WS helpers ─────────────────────────────────────
   function sendWS(obj) {
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
   }
 
-  // FIX: closes with }); and function closing brace
-  function setGlobal(name, value) {
-    sendWS({
-      request: "DoAction",
-      action: {
-        id: "edd57dce-1d75-4c3d-96a5-5965528a9e4d",
-        name: "Combo - Tier Reached" 
-      },
-      args: { value: value }
-    });
+  // Runs a Streamerbot action by ID — no args, fully compatible with 1.0.4
+  function runAction(id) {
+    sendWS({ request: "RunAction", id });
   }
 
   // ── Panel flash ────────────────────────────────────
