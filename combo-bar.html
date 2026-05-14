@@ -530,10 +530,11 @@
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
   }
 
-  // Directly set a Streamerbot global variable via the WebSocket API —
-  // no Streamerbot action required.
+  // SB 0.1.x has no direct WebSocket endpoint for writing globals.
+  // We fire a custom event; the "Combo - Set Multiplier" action in Streamerbot
+  // listens for it and runs: Set Global Variable "multiplier" = %value%
   function setGlobal(name, value) {
-    sendWS({ request: "SetGlobal", id: "combo-" + name, name, value, persisted: false });
+    sendWS({ event: "combo_set_" + name, value });
   }
 
   // ── Panel flash ────────────────────────────────────
