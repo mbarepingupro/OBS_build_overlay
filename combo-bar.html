@@ -513,9 +513,8 @@
       request: "DoAction",
       action: { name: "Combo - Reset Multiplier" },
       args: { value: 1 }
-      handleComboReset();
-      });
-    }
+    });
+    handleComboReset();
   }
 
   // ── Reset ──────────────────────────────────────────
@@ -542,6 +541,7 @@
       request: "DoAction",
       action: { name: "Combo - Tier Reached" },
       args: {value: value}
+      });
   }
 
   // ── Panel flash ────────────────────────────────────
