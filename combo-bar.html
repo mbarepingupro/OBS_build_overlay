@@ -373,17 +373,18 @@
   const WS_URL = "ws://127.0.0.1:8080/";
 
   // ── Tier config ────────────────────────────────────
-  // To add a new tier: add a line here AND create a matching
-  // "Combo - Set Multiplier X" action in Streamerbot, then paste its ID in actionId.
+  // To add a new tier: add a line here. No extra Streamerbot actions needed —
+  // just make sure "Combo - Tier Reached" reads %value% and sets the multiplier.
   const TIERS = [
-    { goal: 10, duration: 20 * 60, multiplier: "2", label: "TIER 1", actionId: "7c825375-3c12-49ae-9d16-cf7e6e5485bd" },
-    { goal: 20, duration: 15 * 60, multiplier: "3", label: "TIER 2", actionId: "894ba9a0-e7f6-4107-b714-9ce05abb0205" },
-    { goal: 30, duration: 10 * 60, multiplier: "6", label: "TIER 3 🔥", actionId: "159c414c-77a8-4d88-a932-58a892e8eba1" },
+    { goal: 10, duration: 20 * 60, multiplier: "2", label: "TIER 1" },
+    { goal: 20, duration: 15 * 60, multiplier: "3", label: "TIER 2" },
+    { goal: 30, duration: 10 * 60, multiplier: "6", label: "TIER 3 🔥" },
   ];
   const MAX_TIER_IDX = TIERS.length - 1;
 
-  // Streamerbot action that sets multiplier back to 1 on combo expiry
-  const RESET_MULTIPLIER_ACTION_ID = "762a3430-9909-4057-8e83-8ab1c1b79fcf";
+  // ── Streamerbot action IDs ─────────────────────────
+  const ACTION_TIER_REACHED    = { id: "edd57dce-1d75-4c3d-96a5-5965528a9e4d", name: "Combo - Tier Reached" };
+  const ACTION_RESET_MULTIPLIER = { id: "762a3430-9909-4057-8e83-8ab1c1b79fcf", name: "Combo - Reset Multiplier" };
 
   const ACTIVATION_BUILDS = 3;
   const ACTIVATION_WINDOW = 60 * 1000;
@@ -462,7 +463,7 @@
     tierIdx       = 0;
     comboProgress = 0;
     startCountdown(TIERS[0].duration);
-    runAction(TIERS[0].actionId); // set multiplier immediately on activation
+    doAction(ACTION_TIER_REACHED, TIERS[0].multiplier); // set multiplier immediately
     render();
   }
 
@@ -475,7 +476,7 @@
 
     comboProgress = Math.max(0, overflow);
     startCountdown(TIERS[tierIdx].duration);
-    runAction(TIERS[tierIdx].actionId); // set multiplier to new tier value
+    doAction(ACTION_TIER_REACHED, TIERS[tierIdx].multiplier); // set new multiplier
     render();
   }
 
@@ -492,7 +493,7 @@
     updateTimerDisplay();
     if (secondsLeft <= 0) {
       clearInterval(timerInterval);
-      runAction(RESET_MULTIPLIER_ACTION_ID); // reset multiplier to 1
+      doAction(ACTION_RESET_MULTIPLIER, "1"); // reset multiplier to 1
       handleComboReset();
     }
   }
@@ -513,9 +514,14 @@
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
   }
 
-  // Runs a Streamerbot action by ID — no args, fully compatible with 1.0.4
-  function runAction(id) {
-    sendWS({ request: "RunAction", id });
+  // DoAction with id at top level — correct format for Streamerbot 1.0.4
+  function doAction(action, value) {
+    sendWS({
+      request: "DoAction",
+      id: "combo-action",
+      action: { id: action.id, name: action.name },
+      args: { value: String(value) }
+    });
   }
 
   // ── Panel flash ────────────────────────────────────
