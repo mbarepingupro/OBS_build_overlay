@@ -15,7 +15,6 @@
       padding: 8px;
     }
 
-    /* ── Panel ─────────────────────────────────────── */
     .panel {
       position: relative;
       background: linear-gradient(160deg, rgba(22,12,4,0.95) 0%, rgba(30,16,4,0.92) 100%);
@@ -43,7 +42,6 @@
       50%       { box-shadow: 0 0 64px rgba(255,80,0,0.32), inset 0 1px 0 rgba(255,220,120,0.20); }
     }
 
-    /* ── Tier-complete flash overlay ────────────────── */
     .tier-flash {
       position: absolute;
       inset: 0;
@@ -59,7 +57,6 @@
       100% { opacity: 0; box-shadow: inset 0 0 0px transparent; }
     }
 
-    /* ── Info row ───────────────────────────────────── */
     .idle-info {
       display: none;
       align-items: center;
@@ -78,7 +75,6 @@
     .panel.idle .idle-info   { display: flex; }
     .panel.idle .active-info { display: none; }
 
-    /* ── Idle content ───────────────────────────────── */
     .idle-icon {
       font-size: 24px;
       opacity: 0.55;
@@ -91,7 +87,6 @@
       font-style: italic;
     }
 
-    /* ── Active sections ────────────────────────────── */
     .section {
       flex: 1;
       display: flex;
@@ -108,7 +103,6 @@
       justify-content: center;
     }
 
-    /* Vertical dividers */
     .vdivider {
       width: 1px;
       height: 34px;
@@ -120,7 +114,6 @@
       background: rgba(255,255,255,0.12);
     }
 
-    /* Section labels */
     .sec-label {
       font-size: 9px;
       text-transform: uppercase;
@@ -130,7 +123,6 @@
       white-space: nowrap;
     }
 
-    /* Title */
     .title-icon {
       font-size: 26px;
       line-height: 1;
@@ -146,7 +138,6 @@
       white-space: nowrap;
     }
 
-    /* Tier badge */
     .tier-badge {
       font-family: 'Cinzel', serif;
       font-size: 19px;
@@ -167,7 +158,6 @@
       50%       { text-shadow: 0 0 24px rgba(255,100,0,0.88); }
     }
 
-    /* Multiplier */
     .mult-value {
       font-family: 'Cinzel', serif;
       font-size: 30px;
@@ -183,7 +173,6 @@
       text-shadow: 0 0 22px rgba(255,80,0,0.75);
     }
 
-    /* Progress count */
     .progress-count {
       font-size: 22px;
       font-weight: 700;
@@ -198,7 +187,6 @@
       font-weight: 300;
     }
 
-    /* Timer */
     .timer-row {
       display: flex;
       align-items: baseline;
@@ -223,7 +211,6 @@
       50%       { opacity: 0.38; }
     }
 
-    /* ── Progress bar ───────────────────────────────── */
     .progress-track {
       height: 10px;
       background: rgba(255,255,255,0.05);
@@ -263,7 +250,6 @@
       100% { left: 130%; }
     }
 
-    /* ── Offline notice ─────────────────────────────── */
     .offline-notice {
       display: none;
       font-size: 9px;
@@ -274,7 +260,6 @@
     }
     .offline-notice.visible { display: block; }
 
-    /* ── Test panel ─────────────────────────────────── */
     .test-panel {
       margin-top: 8px;
       background: rgba(0,0,0,0.80);
@@ -354,7 +339,7 @@
     </div>
   </div>
 
-  <!-- Progress bar (present in both states; empty when idle) -->
+  <!-- Progress bar -->
   <div class="progress-track">
     <div class="progress-fill" id="progressFill" style="width:0%"></div>
   </div>
@@ -387,24 +372,22 @@
 <script>
   const WS_URL = "ws://127.0.0.1:8080/";
 
-  // Tier goals: tier number × 10 (1×10=10, 2×10=20, 3×10=30)
   const TIERS = [
     { goal: 10, duration: 20 * 60, multiplier: "2", label: "TIER 1" },
-    { goal: 20, duration: 15 * 60, multiplier: "3",   label: "TIER 2" },
-    { goal: 30, duration: 10 * 60, multiplier: "6",   label: "TIER 3 🔥" },
+    { goal: 20, duration: 15 * 60, multiplier: "3", label: "TIER 2" },
+    { goal: 30, duration: 10 * 60, multiplier: "6", label: "TIER 3 🔥" },
   ];
   const MAX_TIER_IDX = TIERS.length - 1;
 
-  // Activation: track timestamps of builds; need 3 within 60 seconds
-  const ACTIVATION_BUILDS   = 3;
-  const ACTIVATION_WINDOW   = 60 * 1000; // ms
+  const ACTIVATION_BUILDS = 3;
+  const ACTIVATION_WINDOW = 60 * 1000;
 
   let active        = false;
   let tierIdx       = 0;
   let comboProgress = 0;
   let secondsLeft   = 0;
   let timerInterval = null;
-  let recentBuilds  = []; // timestamps for pre-activation
+  let recentBuilds  = [];
 
   // ── WebSocket ──────────────────────────────────────
   let ws;
@@ -426,8 +409,8 @@
         const msg = JSON.parse(data);
         const d   = msg?.data;
         if (!d) return;
-        if (d.event === "village_build")  handleBuildEvent(parseInt(d.userRoll)||0, parseInt(d.critChance)||0);
-        if (d.event === "combo_reset")    handleComboReset();
+        if (d.event === "village_build") handleBuildEvent(parseInt(d.userRoll)||0, parseInt(d.critChance)||0);
+        if (d.event === "combo_reset")   handleComboReset();
       } catch {}
     };
 
@@ -441,7 +424,6 @@
   // ── Build event ────────────────────────────────────
   function handleBuildEvent(userRoll, critChance) {
     if (!active) {
-      // Pre-activation: accumulate builds within the rolling window
       const now = Date.now();
       recentBuilds.push(now);
       recentBuilds = recentBuilds.filter(t => now - t <= ACTIVATION_WINDOW);
@@ -481,28 +463,26 @@
   function handleTierComplete() {
     flashPanel();
 
-    const completedTier = tierIdx + 1; // 1-indexed, for the event payload
-    const overflow      = comboProgress - TIERS[tierIdx].goal;
+    const overflow = comboProgress - TIERS[tierIdx].goal;
 
-    // Advance tier first so the multiplier we send IS the new tier's value
     if (tierIdx < MAX_TIER_IDX) tierIdx++;
-    // At max tier: stays tier 3, resets progress + timer only
 
-    comboProgress = Math.max(0, overflow); // carry excess into the new tier
+    comboProgress = Math.max(0, overflow);
     startCountdown(TIERS[tierIdx].duration);
 
-    // Send AFTER advancing: multiplier is the value Streamerbot should now apply
+    // FIX: correctly calls DoAction to set multiplier in Streamerbot
     setGlobal("multiplier", parseFloat(TIERS[tierIdx].multiplier));
     render();
   }
 
-  // ── Countdown ─────────────────────────────────────
+  // ── Countdown ──────────────────────────────────────
   function startCountdown(seconds) {
     clearInterval(timerInterval);
     secondsLeft   = seconds;
     timerInterval = setInterval(tickTimer, 1000);
   }
 
+  // FIX: sendWS call closes properly before handleComboReset
   function tickTimer() {
     if (!active) { clearInterval(timerInterval); return; }
     secondsLeft = Math.max(0, secondsLeft - 1);
@@ -510,11 +490,12 @@
     if (secondsLeft <= 0) {
       clearInterval(timerInterval);
       sendWS({
-      request: "DoAction",
-      action: { name: "Combo - Reset Multiplier" },
-      args: { value: 1 }
-    });
-    handleComboReset();
+        request: "DoAction",
+        action: { name: "Combo - Reset Multiplier" },
+        args: { value: 1 }
+      });
+      handleComboReset();
+    }
   }
 
   // ── Reset ──────────────────────────────────────────
@@ -533,15 +514,13 @@
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
   }
 
-  // SB 0.1.x has no direct WebSocket endpoint for writing globals.
-  // We fire a custom event; the "Combo - Set Multiplier" action in Streamerbot
-  // listens for it and runs: Set Global Variable "multiplier" = %value%
+  // FIX: closes with }); and function closing brace
   function setGlobal(name, value) {
-    sendWS({ 
+    sendWS({
       request: "DoAction",
       action: { name: "Combo - Tier Reached" },
-      args: {value: value}
-      });
+      args: { value: value }
+    });
   }
 
   // ── Panel flash ────────────────────────────────────
@@ -608,7 +587,6 @@
     for (let i = 0; i < needed; i++) handleBuildEvent(1, 0);
   }
   function testForceActivate() {
-    // Simulate 3 builds arriving in quick succession
     const now = Date.now();
     recentBuilds = [now - 4000, now - 2000];
     handleBuildEvent(1, 0);
