@@ -509,8 +509,12 @@
     updateTimerDisplay();
     if (secondsLeft <= 0) {
       clearInterval(timerInterval);
-      setGlobal("multiplier", 1);
+      sendWS({
+      request: "DoAction",
+      action: { name: "Combo - Reset Multiplier" },
+      args: { value: 1 }
       handleComboReset();
+      });
     }
   }
 
@@ -534,7 +538,10 @@
   // We fire a custom event; the "Combo - Set Multiplier" action in Streamerbot
   // listens for it and runs: Set Global Variable "multiplier" = %value%
   function setGlobal(name, value) {
-    sendWS({ event: "combo_set_" + name, value });
+    sendWS({ 
+      request: "DoAction",
+      action: { name: "Combo - Tier Reached" },
+      args: {value: value}
   }
 
   // ── Panel flash ────────────────────────────────────
