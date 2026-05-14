@@ -491,7 +491,10 @@
       clearInterval(timerInterval);
       sendWS({
         request: "DoAction",
-        action: { name: "Combo - Reset Multiplier" },
+        action: { 
+          id: "762a3430-9909-4057-8e83-8ab1c1b79fcf",
+          name: "Combo - Reset Multiplier" 
+        },
         args: { value: 1 }
       });
       handleComboReset();
@@ -518,7 +521,10 @@
   function setGlobal(name, value) {
     sendWS({
       request: "DoAction",
-      action: { name: "Combo - Tier Reached" },
+      action: {
+        id: "edd57dce-1d75-4c3d-96a5-5965528a9e4d",
+        name: "Combo - Tier Reached" 
+      },
       args: { value: value }
     });
   }
