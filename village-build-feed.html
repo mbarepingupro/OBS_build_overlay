@@ -578,6 +578,18 @@
       color: rgba(255,70,40,0.95);
       animation: timerUrgent 0.5s ease-in-out infinite;
     }
+    .raid-timer-row { display: flex; justify-content: center; margin-top: 6px; }
+    .raid-timer {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,180,100,0.9);
+      letter-spacing: 0.08em;
+    }
+    .raid-timer.urgent {
+      color: rgba(255,70,40,0.95);
+      animation: timerUrgent 0.5s ease-in-out infinite;
+    }
     @keyframes timerUrgent {
       0%, 100% { opacity: 1; }
       50%       { opacity: 0.5; }
@@ -820,6 +832,9 @@
     <div class="boss-track">
       <div class="boss-fill" id="bossFill" style="width:100%"></div>
     </div>
+    <div class="raid-timer-row">
+      <span class="raid-timer" id="raidTimer">10:00 remaining</span>
+    </div>
   </div>
 
   <!-- Festival boost banner -->
@@ -915,11 +930,13 @@
   let hasteActive     = false;
 
   // ── Raid mode state ────────────────────────────────
-  let raidMode    = false;
-  let bossName    = "";
-  let bossHP      = 0;
-  let bossMaxHP   = 0;
-  let raidReward  = 0;
+  let raidMode          = false;
+  let bossName          = "";
+  let bossHP            = 0;
+  let bossMaxHP         = 0;
+  let raidReward        = 0;
+  let raidTimerInterval = null;
+  let raidSecondsLeft   = 0;
 
   // ── Festival mode state ────────────────────────────
   let festivalMode = false;
@@ -1057,6 +1074,27 @@
     document.getElementById("eventOverlay").classList.remove("visible");
   }
 
+  // ── Raid timer ─────────────────────────────────────
+  function updateRaidTimer() {
+    const el = document.getElementById("raidTimer");
+    if (!el) return;
+    const m = Math.floor(raidSecondsLeft / 60);
+    const s = raidSecondsLeft % 60;
+    el.textContent = `${m}:${String(s).padStart(2, "0")} remaining`;
+    el.classList.toggle("urgent", raidSecondsLeft <= 30);
+  }
+
+  function startRaidTimer(seconds) {
+    clearInterval(raidTimerInterval);
+    raidSecondsLeft = seconds;
+    updateRaidTimer();
+    raidTimerInterval = setInterval(() => {
+      raidSecondsLeft--;
+      updateRaidTimer();
+      if (raidSecondsLeft <= 0) clearInterval(raidTimerInterval);
+    }, 1000);
+  }
+
   // ── Emergency timer ────────────────────────────────
   function updateEmergencyTimer() {
     const el = document.getElementById("emergencyTimer");
@@ -1117,6 +1155,7 @@
       document.getElementById("victoryOverlay").classList.remove("visible");
       currentProgress += reward;
       raidMode = false;
+      clearInterval(raidTimerInterval);
       builds   = [];
       render();
     }, 6000);
@@ -1193,6 +1232,7 @@
           raidMode   = true;
           builds     = [];
           render();
+          startRaidTimer(600);
         }
 
         if (d.event === "village_raid_attack") {
