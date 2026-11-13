@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Village RPG - Monster Frame (wide)</title>
+<style>
+  :root {
+    --gold: #ffd100;
+    --stone: #1a1510;
+    --bronze: #6b5427;
+    --bronze-hi: #b08d3e;
+    --red-hi: #e23b2e;
+    --red-lo: #7d1410;
+  }
+  html, body { margin: 0; background: transparent; overflow: hidden; font-family: "Arial Narrow", "Liberation Sans Narrow", "Roboto Condensed", Arial, sans-serif; font-stretch: condensed; }
+
+  #frame { position: absolute; left: 210px; right: 210px; bottom: 36px; opacity: 0; transform: translateY(14px); transition: opacity .4s, transform .4s; }
+  #frame.show { opacity: 1; transform: none; }
+  #frame.dead #name, #frame.dead #level { filter: grayscale(.7); }
+
+  .row { display: flex; align-items: center; gap: 16px; }
+
+  #level {
+    flex: none; width: 72px; height: 72px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 34px; color: var(--gold);
+    background: radial-gradient(circle at 35% 30%, #3a2e1c, var(--stone) 70%);
+    border: 4px solid var(--bronze-hi);
+    box-shadow: 0 0 0 2px #000, inset 0 0 8px #000, 0 2px 8px rgba(0,0,0,.7);
+    text-shadow: 0 2px 0 #000;
+  }
+
+  #plate { flex: 1; min-width: 0; }
+  #name {
+    font-weight: 700; font-size: 32px; color: var(--gold);
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 6px #000;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px;
+  }
+
+  #bar {
+    position: relative; height: 44px;
+    background: #0b0907;
+    border: 4px solid var(--bronze-hi);
+    border-radius: 5px;
+    box-shadow: 0 0 0 2px #000, inset 0 0 6px #000, 0 3px 10px rgba(0,0,0,.7);
+    overflow: hidden;
+  }
+  #chip, #fill { position: absolute; left: 0; top: 0; bottom: 0; }
+  #chip { background: #f0c36a; width: 100%; transition: width .9s ease-out .35s; }
+  #fill {
+    width: 100%; transition: width .25s ease-out;
+    background: linear-gradient(to bottom, var(--red-hi) 0%, #b81f17 45%, var(--red-lo) 100%);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.28);
+  }
+  #hptext {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    font-weight: 700; font-size: 26px; color: #fff;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  }
+  #bar.hit { animation: shake .25s; }
+  #bar.crit { animation: shake .4s; }
+  @keyframes shake { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-4px) } 75% { transform: translateX(4px) } }
+
+  #feed { margin: 10px 0 0 88px; min-height: 30px; font-size: 24px; color: #e8dcc0; text-shadow: 0 1px 3px #000, 0 0 2px #000; }
+  #feed b { color: var(--gold); }
+
+  .float {
+    position: absolute; font-weight: 700;
+    color: #fff7c2; font-size: 48px; pointer-events: none;
+    text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+    animation: rise 1.3s ease-out forwards;
+  }
+  .float.crit { color: #ff9a1f; font-size: 72px; animation-duration: 1.6s; }
+  @keyframes rise { 0% { opacity: 0; transform: translateY(0) scale(.7) } 15% { opacity: 1; transform: translateY(-14px) scale(1.15) } 100% { opacity: 0; transform: translateY(-80px) scale(1) } }
+
+  #banner {
+    position: absolute; left: 0; right: 0; top: -90px; text-align: center;
+    font-weight: 700; font-size: 48px; color: var(--gold); opacity: 0;
+    text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 0 16px rgba(255,209,0,.5);
+  }
+  #banner.go { animation: banner 3s ease-out forwards; }
+  @keyframes banner { 0% { opacity: 0; transform: scale(.8) } 12% { opacity: 1; transform: scale(1.05) } 80% { opacity: 1 } 100% { opacity: 0 } }
+
+  @media (prefers-reduced-motion: reduce) { #chip { transition: none } .float, #banner.go, #bar.hit, #bar.crit { animation-duration: .01s } }
+</style>
+</head>
+<body>
+<div id="frame">
+  <div class="row">
+    <div id="level">1</div>
+    <div id="plate">
+      <div id="name">Waiting for a monster...</div>
+      <div id="bar">
+        <div id="chip"></div>
+        <div id="fill"></div>
+        <div id="hptext"></div>
+      </div>
+    </div>
+  </div>
+  <div id="feed"></div>
+  <div id="banner"></div>
+</div>
+
+<script>
+// ---- Settings (override with URL: ?host=127.0.0.1&port=8080&test=1) ----
+const q = new URLSearchParams(location.search);
+const HOST = q.get("host") || "127.0.0.1";
+const PORT = q.get("port") || "8080";
+
+const $ = id => document.getElementById(id);
+const frame = $("frame"), bar = $("bar"), fill = $("fill"), chip = $("chip");
+let hideTimer, maxHP = 1;
+
+function setHP(hp, max) {
+  maxHP = max || maxHP || 1;
+  const pct = Math.max(0, Math.min(100, (hp / maxHP) * 100));
+  fill.style.width = pct + "%";
+  chip.style.width = pct + "%";
+  $("hptext").textContent = hp + " / " + maxHP;
+}
+
+function show() {
+  frame.classList.add("show");
+  clearTimeout(hideTimer);
+  hideTimer = setTimeout(() => frame.classList.remove("show"), 5 * 60 * 1000); // hide after 5 min of silence
+}
+
+function onSpawn(d) {
+  frame.classList.remove("dead");
+  $("name").textContent = d.monster;
+  $("level").textContent = d.level;
+  // snap to full without chip animation
+  chip.style.transition = "none"; setHP(d.hp, d.maxHP); void chip.offsetWidth; chip.style.transition = "";
+  $("feed").textContent = "";
+  show();
+}
+
+function onAttack(d) {
+  if (d.monster) $("name").textContent = d.monster;
+  setHP(d.hp, d.maxHP);
+  const crit = d.crit === true || d.crit === "true";
+  bar.classList.remove("hit", "crit"); void bar.offsetWidth; bar.classList.add(crit ? "crit" : "hit");
+
+  const f = document.createElement("div");
+  f.className = "float" + (crit ? " crit" : "");
+  f.textContent = "-" + d.damage + (crit ? "!" : "");
+  f.style.left = (120 + Math.random() * Math.max(200, frame.clientWidth - 240)) + "px";
+  f.style.top = "-20px";
+  frame.appendChild(f);
+  setTimeout(() => f.remove(), 1700);
+
+  const feed = $("feed");
+  feed.textContent = "";
+  const b = document.createElement("b"); b.textContent = d.user;
+  feed.append(b, " (Lvl " + d.level + ") hits for " + d.damage + (crit ? ", a critical hit!" : ""));
+  show();
+}
+
+function onKill(d) {
+  frame.classList.add("dead");
+  const banner = $("banner");
+  banner.textContent = d.monster + " defeated! +" + d.xp + " XP";
+  banner.classList.remove("go"); void banner.offsetWidth; banner.classList.add("go");
+  show();
+}
+
+function handle(d) {
+  if (d.event === "rpg_spawn") onSpawn(d);
+  else if (d.event === "rpg_attack") onAttack(d);
+  else if (d.event === "rpg_kill") onKill(d);
+}
+
+// ---- Streamer.bot websocket ----
+const dbg = q.get("debug") ? document.body.appendChild(document.createElement("div")) : null;
+if (dbg) dbg.style.cssText = "position:absolute;left:8px;top:8px;padding:6px 10px;background:#000;color:#0f0;font:14px Arial;z-index:9;max-width:900px;white-space:pre-wrap;line-height:1.4";
+let dbgLines = [];
+function status(t) {
+  if (!dbg) return;
+  dbgLines.push(t);
+  if (dbgLines.length > 6) dbgLines.shift();
+  dbg.textContent = dbgLines.join("\n");
+}
+function connect() {
+  status("Connecting to ws://" + HOST + ":" + PORT + " ...");
+  const ws = new WebSocket("ws://" + HOST + ":" + PORT + "/");
+  ws.onopen = () => {
+    status("Connected, subscribing...");
+    ws.send(JSON.stringify({ request: "Subscribe", id: "overlay-sub", events: { General: ["Custom"] } }));
+    status("Connected to Streamer.bot");
+  };
+  ws.onmessage = e => {
+    try {
+      const msg = JSON.parse(e.data);
+      // Streamer.bot wraps custom broadcasts: { event: {source, type}, data: {...our json...} }
+      const d = (msg && msg.data && typeof msg.data === "object") ? msg.data : msg;
+      if (d.event && String(d.event).indexOf("rpg_") === 0) status(">> EVENT: " + JSON.stringify(d).slice(0, 160));
+      handle(d);
+    } catch (_) {}
+  };
+  ws.onclose = () => { status("Disconnected, retrying..."); setTimeout(connect, 3000); };
+  ws.onerror = () => ws.close();
+}
+connect();
+
+// ---- Test mode: add ?test=1 to the URL to preview without Streamer.bot ----
+if (q.get("test")) {
+  let hp = 100, waiting = false;
+  handle({ event: "rpg_spawn", monster: "Harvest Golem", level: 10, hp: 100, maxHP: 100 });
+  setInterval(() => {
+    if (waiting) return;
+    const crit = Math.random() < 0.2, dmg = Math.ceil(Math.random() * 8) * (crit ? 2 : 1);
+    hp = Math.max(0, hp - dmg);
+    handle({ event: "rpg_attack", user: "PenguinTester", level: 7, damage: dmg, crit, monster: "Harvest Golem", hp, maxHP: 100 });
+    if (hp === 0) {
+      waiting = true;
+      handle({ event: "rpg_kill", monster: "Harvest Golem", xp: 50 });
+      setTimeout(() => { hp = 100; waiting = false; handle({ event: "rpg_spawn", monster: "Harvest Golem", level: 10, hp: 100, maxHP: 100 }); }, 3500);
+    }
+  }, 1200);
+}
+</script>
+</body>
+</html>
